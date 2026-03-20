@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts",
+    "start": "node --env-file=.env --import tsx src/index.ts",
+    "dev": "node --env-file=.env --import tsx --watch src/index.ts",
     "test": "vitest run"
   },
   "dependencies": {
