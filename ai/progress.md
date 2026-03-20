@@ -36,6 +36,31 @@
 - Deploy script msg.sender (0x1804...) != EOA signer (0xf994...). Minted separately via agent.
 - RPC: https://ethereum-sepolia-rpc.publicnode.com
 
+## Frontend
+- [x] docs/index.html — single-file dashboard (~1560 lines, vanilla JS + ethers.js CDN)
+- [x] Hero: logo, tagline, CTA, live stats ticker ($5K total, 0 loans, 0% util)
+- [x] Dashboard tab: pool overview card, SVG donut chart, loans table, credit score lookup with SVG arc gauge
+- [x] How It Works tab: 5-step node flow, 7 scoring components grid, decision tiers
+- [x] Architecture tab: layered system diagram, tech badges, contract links to Etherscan with copy-to-clipboard
+- [x] Dark theme (design token system, Inter + JetBrains Mono fonts), glassmorphism cards, mobile responsive
+- [x] Live data from Sepolia via ethers.js (pool stats, loans, credit profiles)
+- [x] Tab navigation (incl. keyboard arrow keys), monospace numbers, truncated addresses
+- [x] Demo mode toggle: 5 sample loans, activity feed, multi-segment donut (solves empty-product problem for judges)
+- [x] Polish: skeleton loading, animated counters, scroll-reveal (Intersection Observer), page transitions
+- [x] Accessibility: skip link, aria labels, focus-visible, reduced-motion, keyboard support
+- [x] Auto-refresh every 30s with "Updated" timestamp, retry on error
+- [x] OG meta tags, favicon, theme-color
+- [x] Living background: animated gradient mesh (3 blobs), SVG noise grain, 12 floating particles
+- [x] Ambient color shift per tab (teal/blue/purple), breathing glow on stats bar
+- [x] Hero gradient animation on "Autonomous", donut idle rotation (60s)
+- [x] Flow line pulse animation, architecture connector pulse
+- [x] Card hover glow, scoring row hover lift, table row striping
+- [x] Pool health badge (dynamic: Healthy/Moderate/High Util)
+- [x] Footer with brand, contract links, Telegram link
+- [x] Noscript fallback, Twitter card meta tags
+- [x] All animations respect prefers-reduced-motion
+- [x] Verified: desktop 1280px + mobile 390px, all tabs, demo mode, live Sepolia data, all animations
+
 ## Remaining
 - [ ] Test full /apply flow through Telegram (credit score + LLM + disburse)
 - [ ] Record demo video (5 min, script in plan)
