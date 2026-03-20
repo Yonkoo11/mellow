@@ -1455,7 +1455,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
 // ═══ Load pool data ═══
 async function loadPoolStats() {
   try {
-    const [totalAssets, idleBalance, totalLoaned, totalShares, aaveDeployed, loanCount] = await pool.getPoolStats();
+    const [totalAssets, totalLoaned, aaveDeployed, idleBalance, totalShares, loanCount] = await pool.getPoolStats();
 
     const total = toNum(totalAssets);
     const idle = toNum(idleBalance);
@@ -1520,7 +1520,11 @@ async function loadLoans() {
     const loans = [];
     const promises = [];
     for (let i = count - 1; i >= start; i--) {
-      promises.push(pool.getLoan(i).then(loan => loans.push({ id: i, ...loan })));
+      promises.push(pool.getLoan(i).then(loan => loans.push({
+        id: i, borrower: loan[0], principal: loan[1], rateAPR: loan[2],
+        startTime: loan[3], duration: loan[4], repaidTime: loan[5],
+        status: loan[6], creditScore: loan[7], confidence: loan[8], reasoning: loan[9]
+      })));
     }
     await Promise.all(promises);
     loans.sort((a, b) => b.id - a.id);
