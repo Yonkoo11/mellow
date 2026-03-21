@@ -1,0 +1,871 @@
+<!--
+  DESIGN PROPOSAL #2
+  DNA: DNA-B-T-M-M-S
+  Layout: Bento | Navigation: Top-fixed | Hero: Minimal
+  Color: Monochrome | Typography: Sans-serif
+  Inspiration: Vercel.com + Swiss Design
+  Generated: 2026-03-21
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Escrow Protocol</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --accent: #14B8A6;
+    --border: rgba(255, 255, 255, 0.12);
+    --muted: rgba(255, 255, 255, 0.44);
+    --cell-gap: 4px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+    }
+  }
+
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: var(--black);
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Focus states */
+  a:focus-visible,
+  button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-6);
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .network-label {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    padding-top: 68px;
+    padding-bottom: var(--space-12);
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+
+  /* ---- BENTO GRID ---- */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto auto auto;
+    gap: var(--cell-gap);
+  }
+
+  .bento-cell {
+    border: 1px solid var(--border);
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Escrow table: col 1-2, row 1-2 */
+  .cell-table {
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+    padding: 0;
+  }
+
+  /* Stat cells */
+  .cell-stat-1 { grid-column: 3 / 4; grid-row: 1 / 2; }
+  .cell-stat-2 { grid-column: 4 / 5; grid-row: 1 / 2; }
+  .cell-stat-3 { grid-column: 3 / 4; grid-row: 2 / 3; }
+  .cell-stat-4 { grid-column: 4 / 5; grid-row: 2 / 3; }
+
+  /* Flow: full width */
+  .cell-flow {
+    grid-column: 1 / -1;
+    grid-row: 3 / 4;
+  }
+
+  /* Architecture */
+  .cell-arch {
+    grid-column: 1 / 3;
+    grid-row: 4 / 5;
+  }
+
+  /* Contract */
+  .cell-contract {
+    grid-column: 3 / 5;
+    grid-row: 4 / 5;
+  }
+
+  /* ---- CELL LABEL ---- */
+  .cell-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: var(--space-3);
+    font-weight: 500;
+  }
+
+  /* ---- STAT CARDS ---- */
+  .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 1.1;
+    margin-bottom: var(--space-1);
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* ---- SKELETON ---- */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.04) 25%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-out infinite;
+  }
+
+  .skeleton-line {
+    height: 14px;
+    margin-bottom: var(--space-2);
+  }
+
+  .skeleton-stat {
+    height: 40px;
+    width: 80px;
+    margin-bottom: var(--space-2);
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ---- TABLE ---- */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-header-bar {
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .table-header-bar .cell-label {
+    margin-bottom: 0;
+  }
+
+  .table-count {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .mono {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .addr {
+    color: var(--muted);
+  }
+
+  .status {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .amount {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .hash-cell {
+    color: var(--muted);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---- PROTOCOL FLOW ---- */
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: var(--space-4) 0;
+  }
+
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .flow-step-num {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .flow-step-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .flow-step-desc {
+    font-size: 11px;
+    color: var(--muted);
+    max-width: 140px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .flow-line {
+    width: 60px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 var(--space-4);
+    flex-shrink: 0;
+    margin-bottom: var(--space-8);
+  }
+
+  /* ---- ARCHITECTURE ---- */
+  .arch-diagram {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 2;
+    color: var(--white);
+    white-space: pre;
+  }
+
+  .arch-diagram .highlight {
+    color: var(--accent);
+  }
+
+  /* ---- CONTRACT CELL ---- */
+  .contract-addr {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    color: var(--white);
+    word-break: break-all;
+    line-height: 1.6;
+    margin-bottom: var(--space-4);
+  }
+
+  .contract-addr a {
+    color: var(--white);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .contract-addr a:hover {
+    border-color: var(--accent);
+  }
+
+  .contract-addr a:active {
+    opacity: 0.8;
+  }
+
+  .powered-by {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .usdt-addr {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: var(--space-3);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .usdt-addr a {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .usdt-addr a:hover {
+    border-color: var(--muted);
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .footer-right {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ---- DNA BADGE ---- */
+  .dna-badge {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--black);
+    color: var(--accent);
+    padding: 8px 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+    z-index: 9999;
+    border: 1px solid var(--accent);
+  }
+
+  /* ---- ERROR STATE ---- */
+  .error-msg {
+    font-size: 12px;
+    color: #ef4444;
+    padding: var(--space-4);
+  }
+
+  .retry-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 12px;
+    padding: var(--space-2) var(--space-4);
+    cursor: pointer;
+    margin-top: var(--space-2);
+    transition: border-color var(--duration-fast) var(--ease-out);
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .retry-btn:hover {
+    border-color: var(--accent);
+  }
+
+  .retry-btn:active {
+    opacity: 0.8;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 900px) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+    }
+
+    .cell-table {
+      grid-column: 1 / -1;
+      grid-row: auto;
+    }
+
+    .cell-stat-1 { grid-column: 1 / 2; grid-row: auto; }
+    .cell-stat-2 { grid-column: 2 / 3; grid-row: auto; }
+    .cell-stat-3 { grid-column: 1 / 2; grid-row: auto; }
+    .cell-stat-4 { grid-column: 2 / 3; grid-row: auto; }
+
+    .cell-flow { grid-column: 1 / -1; grid-row: auto; }
+    .cell-arch { grid-column: 1 / -1; grid-row: auto; }
+    .cell-contract { grid-column: 1 / -1; grid-row: auto; }
+  }
+
+  @media (max-width: 600px) {
+    .bento {
+      grid-template-columns: 1fr;
+    }
+
+    .cell-stat-1,
+    .cell-stat-2,
+    .cell-stat-3,
+    .cell-stat-4 {
+      grid-column: 1 / -1;
+    }
+
+    .flow-steps {
+      flex-direction: column;
+    }
+
+    .flow-line {
+      width: 1px;
+      height: 32px;
+      margin: var(--space-2) 0;
+    }
+
+    .stat-value {
+      font-size: 28px;
+    }
+
+    header {
+      padding: 0 var(--space-4);
+    }
+
+    main {
+      padding-left: var(--space-4);
+      padding-right: var(--space-4);
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- DNA Badge -->
+<div class="dna-badge" aria-hidden="true">DNA-B-T-M-M-S</div>
+
+<!-- Header -->
+<header role="banner">
+  <span class="header-title">Agent Escrow Protocol</span>
+  <div class="header-right">
+    <span class="live-dot" aria-label="Live"></span>
+    <span class="network-label">Sepolia</span>
+  </div>
+</header>
+
+<!-- Main -->
+<main role="main">
+  <section class="bento" aria-label="Dashboard">
+
+    <!-- Escrow Table (large cell) -->
+    <article class="bento-cell cell-table" aria-label="Escrow board">
+      <div class="table-header-bar">
+        <span class="cell-label">Escrow Board</span>
+        <span class="table-count" id="table-count">--</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Client</th>
+              <th scope="col">Worker</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">Task</th>
+            </tr>
+          </thead>
+          <tbody id="escrow-tbody">
+            <tr>
+              <td colspan="6">
+                <div class="skeleton skeleton-line" style="width: 100%;"></div>
+                <div class="skeleton skeleton-line" style="width: 90%;"></div>
+                <div class="skeleton skeleton-line" style="width: 95%;"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- Stat: Total Escrows -->
+    <article class="bento-cell cell-stat-1" aria-label="Total escrows">
+      <p class="cell-label">Total Escrows</p>
+      <p class="stat-value" id="stat-total">
+        <span class="skeleton skeleton-stat"></span>
+      </p>
+      <p class="stat-sub" id="stat-total-sub">loading</p>
+    </article>
+
+    <!-- Stat: Volume -->
+    <article class="bento-cell cell-stat-2" aria-label="Total volume">
+      <p class="cell-label">Volume</p>
+      <p class="stat-value" id="stat-volume">
+        <span class="skeleton skeleton-stat"></span>
+      </p>
+      <p class="stat-sub" id="stat-volume-sub">USDT on Sepolia</p>
+    </article>
+
+    <!-- Stat: Completion Rate -->
+    <article class="bento-cell cell-stat-3" aria-label="Completion rate">
+      <p class="cell-label">Completion Rate</p>
+      <p class="stat-value" id="stat-rate">
+        <span class="skeleton skeleton-stat"></span>
+      </p>
+      <p class="stat-sub" id="stat-rate-sub">released / total</p>
+    </article>
+
+    <!-- Stat: Fee -->
+    <article class="bento-cell cell-stat-4" aria-label="Protocol fee">
+      <p class="cell-label">Protocol Fee</p>
+      <p class="stat-value" id="stat-fee">
+        <span class="skeleton skeleton-stat"></span>
+      </p>
+      <p class="stat-sub" id="stat-fee-sub">basis points</p>
+    </article>
+
+    <!-- Protocol Flow -->
+    <article class="bento-cell cell-flow" aria-label="Protocol flow">
+      <p class="cell-label">Protocol Flow</p>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <span class="flow-step-num">01</span>
+          <span class="flow-step-label">Create</span>
+          <span class="flow-step-desc">Client deposits USDT and defines task hash</span>
+        </div>
+        <div class="flow-line" aria-hidden="true"></div>
+        <div class="flow-step">
+          <span class="flow-step-num">02</span>
+          <span class="flow-step-label">Accept</span>
+          <span class="flow-step-desc">Worker agent claims the escrow and begins work</span>
+        </div>
+        <div class="flow-line" aria-hidden="true"></div>
+        <div class="flow-step">
+          <span class="flow-step-num">03</span>
+          <span class="flow-step-label">Submit</span>
+          <span class="flow-step-desc">Worker submits result hash as proof of delivery</span>
+        </div>
+        <div class="flow-line" aria-hidden="true"></div>
+        <div class="flow-step">
+          <span class="flow-step-num">04</span>
+          <span class="flow-step-label">Release</span>
+          <span class="flow-step-desc">Client releases payment, fee sent to treasury</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Architecture -->
+    <article class="bento-cell cell-arch" aria-label="Architecture">
+      <p class="cell-label">Architecture</p>
+      <div class="arch-diagram" aria-label="System architecture diagram"><span class="highlight">Client Agent</span>  ------>  <span class="highlight">AgentEscrow.sol</span>  <------>  <span class="highlight">Worker Agent</span>
+       |                      |                         |
+  evaluateTask()        on-chain state           generateWork()
+  evaluateResult()      USDT custody             submitResult()
+       |                      |                         |
+       +--- LLM Brain --------+---- Sepolia RPC --------+</div>
+    </article>
+
+    <!-- Contract -->
+    <article class="bento-cell cell-contract" aria-label="Contract details">
+      <p class="cell-label">Contract</p>
+      <p class="contract-addr">
+        <a href="https://sepolia.etherscan.io/address/0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="View contract on Etherscan">0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6</a>
+      </p>
+      <p class="usdt-addr">
+        USDT: <a href="https://sepolia.etherscan.io/address/0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View USDT token on Etherscan">0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B</a>
+      </p>
+      <p class="powered-by" style="margin-top: var(--space-5);">Powered by WDK</p>
+    </article>
+
+  </section>
+</main>
+
+<!-- Footer -->
+<footer role="contentinfo">
+  <span class="footer-left">Agent Escrow Protocol / Sepolia Testnet / 2026</span>
+  <span class="footer-right">Inspired by: Vercel.com (restraint) + Swiss Design (mathematical grid)</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var RPC = 'https://ethereum-sepolia-rpc.publicnode.com';
+  var CONTRACT = '0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6';
+  var USDT = '0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B';
+  var ABI = [
+    'function nextId() view returns (uint256)',
+    'function getEscrow(uint256 id) view returns (tuple(address client, address worker, address verifier, address token, uint256 amount, uint256 fee, uint256 deadline, bytes32 taskHash, bytes32 resultHash, uint8 status))',
+    'function feeBps() view returns (uint256)'
+  ];
+  var STATUS_LABELS = ['OPEN', 'ACCEPTED', 'SUBMITTED', 'RELEASED', 'DISPUTED', 'REFUNDED'];
+
+  var provider = new ethers.JsonRpcProvider(RPC);
+  var contract = new ethers.Contract(CONTRACT, ABI, provider);
+
+  // DOM refs
+  var elTbody = document.getElementById('escrow-tbody');
+  var elTotal = document.getElementById('stat-total');
+  var elTotalSub = document.getElementById('stat-total-sub');
+  var elVolume = document.getElementById('stat-volume');
+  var elVolumeSub = document.getElementById('stat-volume-sub');
+  var elRate = document.getElementById('stat-rate');
+  var elRateSub = document.getElementById('stat-rate-sub');
+  var elFee = document.getElementById('stat-fee');
+  var elFeeSub = document.getElementById('stat-fee-sub');
+  var elTableCount = document.getElementById('table-count');
+
+  function shortAddr(addr) {
+    if (!addr || addr === '0x0000000000000000000000000000000000000000') return '0x0...0';
+    return addr.slice(0, 6) + '...' + addr.slice(-4);
+  }
+
+  function shortHash(hash) {
+    if (!hash || hash === '0x' + '0'.repeat(64)) return '--';
+    return hash.slice(0, 10) + '...';
+  }
+
+  function formatAmount(amount) {
+    // USDT has 6 decimals
+    var val = Number(ethers.formatUnits(amount, 6));
+    return val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function renderError(msg) {
+    elTbody.innerHTML =
+      '<tr><td colspan="6">' +
+        '<div class="error-msg">' + msg + '</div>' +
+        '<button class="retry-btn" onclick="window.__retryLoad()">Retry</button>' +
+      '</td></tr>';
+  }
+
+  function renderSkeletonRows(n) {
+    var html = '';
+    for (var i = 0; i < n; i++) {
+      html += '<tr>';
+      for (var j = 0; j < 6; j++) {
+        html += '<td><div class="skeleton skeleton-line" style="width:' + (60 + Math.random() * 40) + '%;"></div></td>';
+      }
+      html += '</tr>';
+    }
+    return html;
+  }
+
+  async function loadData() {
+    try {
+      // Show skeletons
+      elTbody.innerHTML = renderSkeletonRows(4);
+      elTotal.innerHTML = '<span class="skeleton skeleton-stat"></span>';
+      elVolume.innerHTML = '<span class="skeleton skeleton-stat"></span>';
+      elRate.innerHTML = '<span class="skeleton skeleton-stat"></span>';
+      elFee.innerHTML = '<span class="skeleton skeleton-stat"></span>';
+
+      // Fetch nextId and feeBps in parallel
+      var results = await Promise.all([
+        contract.nextId(),
+        contract.feeBps()
+      ]);
+
+      var nextId = Number(results[0]);
+      var feeBps = Number(results[1]);
+      var totalEscrows = nextId > 0 ? nextId - 1 : 0;
+
+      // Fetch all escrows
+      var escrowPromises = [];
+      for (var i = 1; i < nextId; i++) {
+        escrowPromises.push(contract.getEscrow(i));
+      }
+
+      var escrows = await Promise.all(escrowPromises);
+
+      // Compute stats
+      var totalVolume = BigInt(0);
+      var releasedCount = 0;
+
+      for (var k = 0; k < escrows.length; k++) {
+        totalVolume += escrows[k].amount;
+        if (Number(escrows[k].status) === 3) { // RELEASED
+          releasedCount++;
+        }
+      }
+
+      var volumeFormatted = formatAmount(totalVolume);
+      var completionRate = totalEscrows > 0
+        ? Math.round((releasedCount / totalEscrows) * 100)
+        : 0;
+
+      // Render stats
+      elTotal.textContent = totalEscrows;
+      elTotalSub.textContent = 'on-chain escrows';
+
+      elVolume.textContent = volumeFormatted;
+      elVolumeSub.textContent = 'USDT on Sepolia';
+
+      elRate.textContent = completionRate + '%';
+      elRateSub.textContent = releasedCount + ' released / ' + totalEscrows + ' total';
+
+      elFee.textContent = feeBps;
+      elFeeSub.textContent = 'basis points (' + (feeBps / 100).toFixed(1) + '%)';
+
+      elTableCount.textContent = totalEscrows + ' records';
+
+      // Render table rows (newest first)
+      if (totalEscrows === 0) {
+        elTbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);padding:var(--space-6);text-align:center;">No escrows yet. Create one to get started.</td></tr>';
+        return;
+      }
+
+      var rows = '';
+      for (var r = escrows.length - 1; r >= 0; r--) {
+        var e = escrows[r];
+        var id = r + 1;
+        var statusIdx = Number(e.status);
+        var statusLabel = STATUS_LABELS[statusIdx] || 'UNKNOWN';
+
+        rows +=
+          '<tr>' +
+            '<td class="mono">#' + id + '</td>' +
+            '<td class="mono addr" title="' + e.client + '">' + shortAddr(e.client) + '</td>' +
+            '<td class="mono addr" title="' + e.worker + '">' + shortAddr(e.worker) + '</td>' +
+            '<td class="mono amount">' + formatAmount(e.amount) + '</td>' +
+            '<td><span class="status">' + statusLabel + '</span></td>' +
+            '<td class="mono hash-cell" title="' + e.taskHash + '">' + shortHash(e.taskHash) + '</td>' +
+          '</tr>';
+      }
+
+      elTbody.innerHTML = rows;
+
+    } catch (err) {
+      console.error('Failed to load escrow data:', err);
+      renderError('Failed to load data from Sepolia. ' + (err.message || ''));
+    }
+  }
+
+  window.__retryLoad = loadData;
+
+  // Initial load
+  loadData();
+
+  // Auto-refresh every 30s
+  setInterval(loadData, 30000);
+})();
+</script>
+
+</body>
+</html>
