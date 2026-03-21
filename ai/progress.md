@@ -32,11 +32,13 @@
 - [x] Worker: 0x480f3bc5656e4FF1D0CB5284bAA3B094db3B8125 (WDK #1)
 - [x] Funder wallet sends initial ETH + USDT to both agents
 
-### Dashboard
-- [x] docs/index.html - Live Sepolia data, dark theme, auto-refresh 30s
-- [x] Hero stats: total escrows, volume, completion rate
-- [x] Escrow board table with status pills (Released/Open/Submitted/Accepted/Disputed)
-- [x] How It Works (4-step flow) + Architecture diagram
+### Dashboard (Redesigned - Proposal 3 / DNA-F-O-F-N-E)
+- [x] docs/index.html - Editorial serif design, Instrument Serif + gold accent
+- [x] Full-viewport hero, stats bar triptych, escrow board ledger table
+- [x] Pull quote section, two-column editorial "The Protocol" with drop cap
+- [x] Architecture diagram (Client Agent <-> AgentEscrow <-> Worker Agent)
+- [x] Footer with GitHub + Etherscan links, "Powered by Tether WDK"
+- [x] Live Sepolia data, auto-refresh 30s, skeleton loaders, error state with retry
 - [x] GitHub Pages: https://yonkoo11.github.io/mellow/ (needs push to update)
 
 ### Cleanup
