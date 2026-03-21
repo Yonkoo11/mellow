@@ -1,1765 +1,1419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mellow — Autonomous AI Lending</title>
-<meta name="description" content="Autonomous AI lending agent that analyzes on-chain behavior, scores creditworthiness, and makes lending decisions. No humans in the loop.">
-<meta property="og:title" content="Mellow — Autonomous AI Lending">
-<meta property="og:description" content="AI agent that scores creditworthiness and makes autonomous lending decisions on Ethereum.">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Mellow — Autonomous AI Lending">
-<meta name="twitter:description" content="AI agent that scores creditworthiness and makes autonomous lending decisions on Ethereum.">
-<meta name="theme-color" content="#00d4aa">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🟢</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Escrow Protocol</title>
+  <meta name="description" content="Trustless agent-to-agent commerce on Ethereum. Escrow primitive for autonomous AI agents via WDK wallets.">
+  <meta property="og:title" content="Agent Escrow Protocol">
+  <meta property="og:description" content="Trustless agent-to-agent commerce on Ethereum">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#0a0a0f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Design Tokens ===== */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --bg-card-hover: rgba(255, 255, 255, 0.05);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e8e8ed;
+      --text-secondary: #8b8b9e;
+      --text-tertiary: #5a5a6e;
+      --accent: #10b981;
+      --accent-dim: rgba(16, 185, 129, 0.12);
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --amber: #f59e0b;
+      --amber-dim: rgba(245, 158, 11, 0.12);
+      --blue: #3b82f6;
+      --blue-dim: rgba(59, 130, 246, 0.12);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.12);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.12);
+      --gray: #6b7280;
+      --gray-dim: rgba(107, 114, 128, 0.12);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
 
-:root {
-  /* Color system */
-  --bg-0: #06060b;
-  --bg-1: #0c0c14;
-  --bg-2: #12121c;
-  --bg-3: #1a1a28;
-  --bg-card: rgba(255,255,255,0.025);
-  --bg-card-hover: rgba(255,255,255,0.045);
-  --border: rgba(255,255,255,0.06);
-  --border-hover: rgba(255,255,255,0.12);
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  --text-0: #ffffff;
-  --text-1: #c8cad0;
-  --text-2: #8b8d96;
-  --text-3: #55565e;
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
 
-  --accent: #00d4aa;
-  --accent-light: #33e0be;
-  --accent-dim: rgba(0,212,170,0.12);
-  --accent-glow: rgba(0,212,170,0.25);
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
 
-  --red: #ff4466;
-  --red-dim: rgba(255,68,102,0.12);
-  --yellow: #f0b429;
-  --yellow-dim: rgba(240,180,41,0.12);
-  --blue: #4d9fff;
-  --blue-dim: rgba(77,159,255,0.12);
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
 
-  /* Typography */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    /* Focus states */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
 
-  /* Spacing scale (4px base) */
-  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
-  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
-  --s-9: 48px; --s-10: 64px; --s-11: 80px; --s-12: 96px;
+    /* ===== Skip Link ===== */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: var(--space-md);
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-sm);
+      z-index: 100;
+      font-weight: 600;
+    }
+    .skip-link:focus { top: var(--space-md); }
 
-  /* Radius */
-  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-full: 9999px;
+    /* ===== Layout ===== */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+    }
 
-  /* Transitions */
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
+    /* ===== Hero ===== */
+    .hero {
+      padding: var(--space-3xl) 0 var(--space-2xl);
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+    }
 
-html { scroll-behavior: smooth; }
+    .hero-title {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-sm);
+    }
 
-body {
-  background: var(--bg-0);
-  color: var(--text-1);
-  font-family: var(--font);
-  line-height: 1.6;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
+    .hero-subtitle {
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2xl);
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-/* ═══ Living background ═══ */
-.bg-layer {
-  position: fixed; inset: 0; z-index: -3; overflow: hidden;
-  background: var(--bg-0);
-}
-/* Noise grain — adds analog depth */
-.bg-layer::after {
-  content: '';
-  position: absolute; inset: -50%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 128px;
-  opacity: 0.025;
-  pointer-events: none;
-}
-/* Gradient mesh — animated blobs */
-.bg-blob {
-  position: absolute; border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0;
-  animation: blob-drift 20s ease-in-out infinite, blob-fade-in 2s ease forwards;
-  will-change: transform;
-}
-.bg-blob-1 {
-  width: 600px; height: 600px; top: -10%; left: 20%;
-  background: radial-gradient(circle, rgba(0,212,170,0.12) 0%, transparent 70%);
-  animation-delay: 0s;
-}
-.bg-blob-2 {
-  width: 500px; height: 500px; top: 40%; right: -5%;
-  background: radial-gradient(circle, rgba(77,159,255,0.08) 0%, transparent 70%);
-  animation-delay: -7s;
-  animation-duration: 25s;
-}
-.bg-blob-3 {
-  width: 400px; height: 400px; bottom: 10%; left: 10%;
-  background: radial-gradient(circle, rgba(120,80,220,0.06) 0%, transparent 70%);
-  animation-delay: -14s;
-  animation-duration: 30s;
-}
-@keyframes blob-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(60px, -40px) scale(1.1); }
-  50% { transform: translate(-30px, 50px) scale(0.95); }
-  75% { transform: translate(40px, 20px) scale(1.05); }
-}
-@keyframes blob-fade-in {
-  to { opacity: 1; }
-}
-/* Dot grid (subtle) */
-.bg-grid {
-  position: absolute; inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
-  background-size: 40px 40px;
-}
-/* Floating particles */
-.particles {
-  position: fixed; inset: 0; z-index: -2; pointer-events: none; overflow: hidden;
-}
-.particle {
-  position: absolute; width: 2px; height: 2px;
-  background: var(--accent); border-radius: 50%;
-  opacity: 0;
-  animation: particle-rise linear infinite;
-}
-@keyframes particle-rise {
-  0% { transform: translateY(0) translateX(0); opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.15; }
-  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
-}
-/* Breathing glow on stats */
-.stats-bar {
-  position: relative;
-}
-.stats-bar::before {
-  content: '';
-  position: absolute; inset: -1px; z-index: -1;
-  border-radius: var(--r-lg);
-  background: linear-gradient(135deg, var(--accent-glow), transparent, var(--blue-dim));
-  opacity: 0;
-  animation: breathe-glow 4s ease-in-out infinite;
-}
-@keyframes breathe-glow {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.5; }
-}
-/* Active tab ambient color shift */
-[data-ambient="dashboard"] .bg-blob-1 { background: radial-gradient(circle, rgba(0,212,170,0.12) 0%, transparent 70%); }
-[data-ambient="how"] .bg-blob-1 { background: radial-gradient(circle, rgba(77,159,255,0.12) 0%, transparent 70%); }
-[data-ambient="arch"] .bg-blob-1 { background: radial-gradient(circle, rgba(120,80,220,0.10) 0%, transparent 70%); }
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+    }
 
-a { color: var(--accent); text-decoration: none; transition: color 0.15s; }
-a:hover { color: var(--accent-light); }
+    .stat-item {
+      text-align: center;
+      min-width: 140px;
+    }
 
-/* ═══ Nav ═══ */
-.nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(6,6,11,0.8);
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  border-bottom: 1px solid var(--border);
-  height: 60px;
-}
-.nav-inner {
-  max-width: 1200px; margin: 0 auto;
-  padding: 0 var(--s-6);
-  display: flex; align-items: center; justify-content: space-between;
-  height: 100%;
-}
-.nav-left { display: flex; align-items: center; gap: var(--s-4); }
-.nav-logo {
-  font-size: 1.125rem; font-weight: 800; color: var(--accent);
-  letter-spacing: -0.03em;
-}
-.nav-status {
-  display: flex; align-items: center; gap: var(--s-2);
-  font-size: 0.7rem; color: var(--text-3);
-  text-transform: uppercase; letter-spacing: 0.06em;
-}
-.nav-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow), 0 0 20px var(--accent-dim);
-  animation: pulse-dot 3s ease infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 8px var(--accent-glow), 0 0 20px var(--accent-dim); }
-  50% { box-shadow: 0 0 4px var(--accent-glow), 0 0 8px transparent; }
-}
-.nav-tabs { display: flex; gap: var(--s-1); }
-.nav-tab {
-  position: relative;
-  padding: var(--s-2) var(--s-4); border-radius: var(--r-sm);
-  font-size: 0.8125rem; font-weight: 500; color: var(--text-2);
-  cursor: pointer; border: none; background: none;
-  transition: color 0.2s, background 0.2s;
-}
-.nav-tab:hover { color: var(--text-1); }
-.nav-tab.active {
-  color: var(--text-0);
-  background: rgba(255,255,255,0.06);
-}
-.nav-tab.active::after {
-  content: '';
-  position: absolute; bottom: -1px; left: var(--s-4); right: var(--s-4);
-  height: 2px; background: var(--accent); border-radius: 1px;
-}
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+    }
 
-/* ═══ Layout ═══ */
-.container { max-width: 1200px; margin: 0 auto; padding: 0 var(--s-6); }
+    .stat-value.loading {
+      background: linear-gradient(90deg, var(--bg-card) 40%, var(--bg-card-hover) 50%, var(--bg-card) 60%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+      color: transparent;
+      display: inline-block;
+      min-width: 80px;
+    }
 
-/* Page transitions */
-.page {
-  display: none; padding-top: var(--s-11); padding-bottom: var(--s-10);
-  animation: page-in 0.4s var(--ease);
-}
-.page.active { display: block; }
-@keyframes page-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
 
-/* ═══ Hero ═══ */
-.hero {
-  text-align: center;
-  padding: var(--s-12) 0 var(--s-10);
-}
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  padding: var(--s-1) var(--s-3);
-  background: var(--accent-dim); border: 1px solid rgba(0,212,170,0.15);
-  border-radius: var(--r-full);
-  font-size: 0.75rem; font-weight: 600; color: var(--accent);
-  letter-spacing: 0.02em;
-  margin-bottom: var(--s-6);
-}
-.hero-eyebrow svg { width: 14px; height: 14px; }
-.hero-title {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 800; color: var(--text-0);
-  letter-spacing: -0.04em; line-height: 1.1;
-  margin-bottom: var(--s-4);
-}
-.hero-title .gradient {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--blue) 50%, var(--accent) 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradient-shift 6s ease-in-out infinite;
-}
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.hero-sub {
-  font-size: 1.125rem; color: var(--text-2);
-  max-width: 480px; margin: 0 auto var(--s-8);
-  line-height: 1.7;
-}
-.hero-actions { display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  padding: var(--s-3) var(--s-6); border-radius: var(--r-md);
-  background: var(--accent); color: var(--bg-0); font-weight: 600;
-  font-size: 0.875rem; border: none; cursor: pointer;
-  transition: transform 0.15s var(--ease), box-shadow 0.15s;
-  text-decoration: none;
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 32px var(--accent-glow);
-  color: var(--bg-0);
-}
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  padding: var(--s-3) var(--s-6); border-radius: var(--r-md);
-  background: rgba(255,255,255,0.05); color: var(--text-1);
-  font-weight: 500; font-size: 0.875rem; border: 1px solid var(--border);
-  cursor: pointer; transition: all 0.15s;
-  text-decoration: none;
-}
-.btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: var(--border-hover); color: var(--text-0); }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: var(--space-xs);
+    }
 
-/* ═══ Stats bar (hero) ═══ */
-.stats-bar {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 1px; margin-top: var(--s-10);
-  background: var(--border); border-radius: var(--r-lg); overflow: hidden;
-  border: 1px solid var(--border);
-}
-.stats-bar-item {
-  background: var(--bg-1);
-  padding: var(--s-6) var(--s-4);
-  text-align: center;
-  transition: background 0.2s;
-}
-.stats-bar-item:hover { background: var(--bg-2); }
-.stats-bar-value {
-  font-family: var(--mono); font-size: 1.5rem; font-weight: 700;
-  color: var(--text-0); letter-spacing: -0.02em;
-}
-.stats-bar-label {
-  font-size: 0.7rem; color: var(--text-3);
-  text-transform: uppercase; letter-spacing: 0.08em;
-  margin-top: var(--s-1);
-}
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: var(--space-2xl);
+      padding: 6px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 100px;
+    }
 
-/* ═══ Cards ═══ */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--s-6);
-  transition: border-color 0.2s, background 0.2s;
-}
-.card:hover {
-  border-color: var(--border-hover); background: var(--bg-card-hover);
-  box-shadow: 0 0 40px rgba(0,212,170,0.03);
-}
-.card + .card { margin-top: var(--s-5); }
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: var(--s-5);
-}
-.card-title {
-  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--text-3); font-weight: 600;
-}
-.card-badge {
-  font-size: 0.7rem; padding: var(--s-1) var(--s-3);
-  border-radius: var(--r-full); font-weight: 500;
-}
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
 
-/* ═══ Dashboard grid ═══ */
-.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); margin-bottom: var(--s-5); }
+    /* ===== Section Headers ===== */
+    .section {
+      padding: var(--space-3xl) 0;
+    }
 
-/* Pool allocation donut */
-.pool-alloc { display: flex; align-items: center; gap: var(--s-7); }
-.donut-wrap { position: relative; flex-shrink: 0; }
-.donut-center {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-}
-.donut-value {
-  font-family: var(--mono); font-size: 1.25rem; font-weight: 700; color: var(--text-0);
-  text-shadow: 0 0 20px var(--accent-glow);
-}
-#donut { animation: donut-idle 60s linear infinite; }
-@keyframes donut-idle { to { transform: rotate(360deg); } }
-.donut-label { font-size: 0.65rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
-.alloc-legend { display: flex; flex-direction: column; gap: var(--s-3); }
-.legend-item { display: flex; align-items: center; gap: var(--s-3); }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.legend-text { font-size: 0.8125rem; color: var(--text-2); }
-.legend-val { font-family: var(--mono); font-size: 0.8125rem; color: var(--text-0); margin-left: auto; }
+    .section + .section {
+      border-top: 1px solid var(--border-subtle);
+    }
 
-/* Stat cards */
-.stat-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
-.stat-card {
-  background: var(--bg-2); border-radius: var(--r-md);
-  padding: var(--s-4) var(--s-5);
-}
-.stat-card-value {
-  font-family: var(--mono); font-size: 1.25rem; font-weight: 700;
-  color: var(--text-0); letter-spacing: -0.01em;
-}
-.stat-card-label { font-size: 0.7rem; color: var(--text-3); margin-top: 2px; }
-.stat-card-change {
-  font-size: 0.7rem; font-family: var(--mono); margin-top: var(--s-1);
-}
-.stat-card-change.up { color: var(--accent); }
-.stat-card-change.down { color: var(--red); }
+    .section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-sm);
+    }
 
-/* ═══ Table ═══ */
-.table-wrap { overflow-x: auto; margin: 0 calc(var(--s-6) * -1); padding: 0 var(--s-6); }
-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
-th {
-  text-align: left; padding: var(--s-3) var(--s-4);
-  font-size: 0.6875rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-3); border-bottom: 1px solid var(--border);
-}
-td {
-  padding: var(--s-3) var(--s-4);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  vertical-align: middle;
-}
-tr { transition: background 0.15s; }
-tr:hover td { background: rgba(255,255,255,0.02); }
-.mono { font-family: var(--mono); font-size: 0.75rem; }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--space-lg);
+    }
 
-/* Status pills */
-.pill {
-  display: inline-flex; align-items: center; gap: var(--s-1);
-  padding: 2px var(--s-2); border-radius: var(--r-full);
-  font-size: 0.6875rem; font-weight: 600;
-}
-.pill::before {
-  content: ''; width: 5px; height: 5px; border-radius: 50%;
-}
-.pill-active { background: var(--yellow-dim); color: var(--yellow); }
-.pill-active::before { background: var(--yellow); }
-.pill-repaid { background: var(--accent-dim); color: var(--accent); }
-.pill-repaid::before { background: var(--accent); }
-.pill-defaulted { background: var(--red-dim); color: var(--red); }
-.pill-defaulted::before { background: var(--red); }
+    /* ===== Escrow Board ===== */
+    .board-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
 
-/* Empty state */
-.empty-state {
-  text-align: center; padding: var(--s-9) var(--s-6);
-}
-.empty-icon {
-  width: 48px; height: 48px; margin: 0 auto var(--s-4);
-  border-radius: var(--r-md);
-  background: var(--bg-2);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-3);
-}
-.empty-title { font-size: 0.875rem; font-weight: 600; color: var(--text-1); margin-bottom: var(--s-1); }
-.empty-desc { font-size: 0.8125rem; color: var(--text-3); }
+    .board-header-left {
+      display: flex;
+      flex-direction: column;
+    }
 
-/* ═══ Credit score lookup ═══ */
-.lookup-form {
-  display: flex; gap: var(--s-3); flex-wrap: wrap;
-}
-.lookup-input {
-  flex: 1; min-width: 240px; padding: var(--s-3) var(--s-4);
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: var(--r-md); color: var(--text-0);
-  font-family: var(--mono); font-size: 0.8125rem;
-  outline: none; transition: border-color 0.2s;
-}
-.lookup-input::placeholder { color: var(--text-3); }
-.lookup-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-.lookup-btn {
-  padding: var(--s-3) var(--s-5); border-radius: var(--r-md);
-  background: var(--accent); color: var(--bg-0); font-weight: 600;
-  border: none; cursor: pointer; font-size: 0.8125rem;
-  transition: all 0.15s;
-}
-.lookup-btn:hover { box-shadow: 0 4px 16px var(--accent-glow); }
-.lookup-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .refresh-info {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
 
-/* Score gauge */
-.score-display { display: none; margin-top: var(--s-6); }
-.score-display.visible { display: block; animation: page-in 0.4s var(--ease); }
-.score-layout { display: grid; grid-template-columns: 200px 1fr; gap: var(--s-7); align-items: start; }
-.gauge-wrap { display: flex; flex-direction: column; align-items: center; }
-.gauge-svg { width: 180px; height: 120px; }
-.gauge-score {
-  font-family: var(--mono); font-size: 2.5rem; font-weight: 800;
-  margin-top: var(--s-2);
-}
-.gauge-label { font-size: 0.75rem; color: var(--text-3); }
-.score-details { display: flex; flex-direction: column; gap: var(--s-4); }
-.score-meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); }
-.score-meta-item {
-  background: var(--bg-2); border-radius: var(--r-sm);
-  padding: var(--s-3) var(--s-4);
-}
-.score-meta-val { font-family: var(--mono); font-size: 1.125rem; font-weight: 700; color: var(--text-0); }
-.score-meta-label { font-size: 0.65rem; color: var(--text-3); margin-top: 2px; }
+    .escrow-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+    }
 
-.error-msg { color: var(--red); font-size: 0.8125rem; margin-top: var(--s-3); }
+    .escrow-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      min-width: 700px;
+    }
 
-/* ═══ How it works ═══ */
-.section-header { margin-bottom: var(--s-8); }
-.section-title {
-  font-size: 1.75rem; font-weight: 800; color: var(--text-0);
-  letter-spacing: -0.03em;
-}
-.section-sub { color: var(--text-2); margin-top: var(--s-2); font-size: 1rem; }
+    .escrow-table th {
+      text-align: left;
+      padding: var(--space-md);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
 
-/* Flow steps with connecting line */
-.flow {
-  position: relative;
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: var(--s-4);
-  margin-bottom: var(--s-9);
-}
-.flow::before {
-  content: '';
-  position: absolute; top: 28px; left: 10%; right: 10%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--blue));
-  opacity: 0.2;
-}
-.flow::after {
-  content: '';
-  position: absolute; top: 27px; left: 10%; width: 40px; height: 4px;
-  background: var(--accent);
-  border-radius: 2px;
-  filter: blur(2px);
-  animation: flow-pulse 4s ease-in-out infinite;
-  opacity: 0.6;
-}
-@keyframes flow-pulse {
-  0%, 100% { left: 10%; opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { left: calc(90% - 40px); opacity: 0; }
-}
-.flow-step {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center;
-}
-.flow-icon {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--bg-1); border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: var(--s-3);
-  transition: border-color 0.3s, box-shadow 0.3s;
-  color: var(--accent); font-size: 1.25rem;
-}
-.flow-step:hover .flow-icon {
-  border-color: var(--accent);
-  box-shadow: 0 0 24px var(--accent-dim);
-}
-.flow-num {
-  position: absolute; top: -4px; right: calc(50% - 36px);
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--accent); color: var(--bg-0);
-  font-size: 0.625rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-}
-.flow-title { font-size: 0.8125rem; font-weight: 600; color: var(--text-0); margin-bottom: var(--s-1); }
-.flow-desc { font-size: 0.75rem; color: var(--text-3); line-height: 1.5; max-width: 160px; }
+    .escrow-table td {
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
 
-/* Scoring breakdown */
-.scoring-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); }
-.scoring-row {
-  display: flex; align-items: center; gap: var(--s-4);
-  padding: var(--s-4);
-  background: var(--bg-2); border-radius: var(--r-md);
-  transition: transform 0.2s var(--ease), background 0.2s;
-}
-.scoring-row:hover { transform: translateY(-1px); background: var(--bg-3); }
-.scoring-icon {
-  width: 36px; height: 36px; border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; flex-shrink: 0;
-}
-.scoring-info { flex: 1; }
-.scoring-name { font-size: 0.8125rem; font-weight: 600; color: var(--text-0); }
-.scoring-detail { font-size: 0.7rem; color: var(--text-3); margin-top: 1px; }
-.scoring-pts {
-  font-family: var(--mono); font-size: 0.875rem; font-weight: 700;
-  color: var(--accent); flex-shrink: 0;
-}
+    .escrow-table tr:last-child td {
+      border-bottom: none;
+    }
 
-/* Decision tiers */
-.tiers {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 1px; background: var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
-  border: 1px solid var(--border);
-  margin-top: var(--s-6);
-}
-.tier {
-  background: var(--bg-1);
-  padding: var(--s-5) var(--s-4);
-  text-align: center;
-  transition: background 0.2s;
-}
-.tier:hover { background: var(--bg-2); }
-.tier-range { font-family: var(--mono); font-size: 0.9375rem; font-weight: 700; color: var(--text-0); }
-.tier-decision {
-  font-size: 0.6875rem; font-weight: 700; margin: var(--s-2) 0;
-  letter-spacing: 0.04em;
-}
-.tier-rate { font-family: var(--mono); font-size: 0.75rem; color: var(--text-3); }
-.tier-pool { font-size: 0.65rem; color: var(--text-3); margin-top: var(--s-1); }
+    .escrow-table tbody tr {
+      cursor: pointer;
+      transition: background var(--duration-fast) var(--ease-out);
+    }
 
-/* ═══ Architecture ═══ */
-.arch-visual {
-  background: var(--bg-1); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: var(--s-8);
-  margin-bottom: var(--s-6);
-  overflow: hidden;
-}
-.arch-layers { display: flex; flex-direction: column; gap: var(--s-6); align-items: center; }
-.arch-layer {
-  display: flex; gap: var(--s-4); justify-content: center; flex-wrap: wrap;
-  width: 100%;
-}
-.arch-node {
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: var(--s-3) var(--s-5);
-  text-align: center; transition: all 0.2s;
-  min-width: 140px;
-}
-.arch-node:hover { border-color: var(--accent); background: var(--bg-3); }
-.arch-node.primary { border-color: rgba(0,212,170,0.3); background: rgba(0,212,170,0.05); }
-.arch-node-name { font-size: 0.8125rem; font-weight: 600; color: var(--text-0); }
-.arch-node-desc { font-size: 0.6875rem; color: var(--text-3); margin-top: 2px; }
-.arch-connector {
-  display: flex; justify-content: center;
-  color: var(--text-3); font-size: 0.75rem;
-}
-.arch-connector svg {
-  width: 24px; height: 24px; color: var(--text-3);
-  animation: connector-pulse 3s ease-in-out infinite;
-}
-@keyframes connector-pulse {
-  0%, 100% { opacity: 0.3; transform: translateY(0); }
-  50% { opacity: 0.7; transform: translateY(3px); }
-}
+    .escrow-table tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
 
-.badges { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.badge {
-  padding: var(--s-2) var(--s-3); border-radius: var(--r-sm);
-  font-size: 0.75rem; font-weight: 600;
-  border: 1px solid var(--border);
-  color: var(--text-2); background: var(--bg-2);
-  transition: all 0.15s;
-}
-.badge:hover { border-color: var(--accent); color: var(--accent); }
+    .escrow-table tbody tr:active {
+      background: rgba(255, 255, 255, 0.07);
+    }
 
-.contracts-list { display: flex; flex-direction: column; }
-.contract-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: var(--s-4) 0; border-bottom: 1px solid rgba(255,255,255,0.03);
-  flex-wrap: wrap; gap: var(--s-2);
-}
-.contract-row:last-child { border-bottom: none; }
-.contract-left { display: flex; align-items: center; gap: var(--s-3); }
-.contract-icon {
-  width: 32px; height: 32px; border-radius: var(--r-sm);
-  background: var(--bg-2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; color: var(--accent);
-}
-.contract-name { font-weight: 600; color: var(--text-0); font-size: 0.875rem; }
-.contract-desc { font-size: 0.7rem; color: var(--text-3); }
-.contract-addr {
-  font-family: var(--mono); font-size: 0.75rem; color: var(--text-2);
-  padding: var(--s-1) var(--s-3); background: var(--bg-2);
-  border-radius: var(--r-sm); transition: all 0.15s;
-}
-.contract-addr:hover { color: var(--accent); background: var(--accent-dim); }
+    .escrow-table tbody tr.selected {
+      background: var(--accent-dim);
+    }
 
-/* Features */
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); }
-.feature {
-  background: var(--bg-2); border-radius: var(--r-md);
-  padding: var(--s-5);
-  transition: transform 0.2s var(--ease);
-}
-.feature:hover { transform: translateY(-2px); }
-.feature-icon {
-  width: 36px; height: 36px; border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: var(--s-3); font-size: 1.125rem;
-}
-.feature-title { font-size: 0.8125rem; font-weight: 600; color: var(--text-0); margin-bottom: var(--s-1); }
-.feature-desc { font-size: 0.75rem; color: var(--text-3); line-height: 1.6; }
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
 
-/* ═══ Footer ═══ */
-.footer {
-  border-top: 1px solid var(--border);
-  color: var(--text-3); font-size: 0.75rem;
-  margin-top: var(--s-10);
-  padding: var(--s-7) var(--s-6);
-}
-.footer-inner {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: var(--s-3);
-}
-.footer-left { display: flex; align-items: center; gap: var(--s-2); }
-.footer-brand { color: var(--accent); font-weight: 700; }
-.footer-links { display: flex; align-items: center; gap: var(--s-2); }
-.footer-links a { color: var(--text-3); transition: color 0.15s; }
-.footer-links a:hover { color: var(--accent); }
-.footer-sep { color: var(--text-3); opacity: 0.3; }
+    .addr {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
 
-/* ═══ Table row stripe ═══ */
-tbody tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+    .addr:hover {
+      color: var(--accent);
+    }
 
-/* ═══ Skeleton loading ═══ */
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-2) 25%, var(--bg-3) 50%, var(--bg-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--r-sm);
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.skeleton-text { height: 16px; width: 80%; }
-.skeleton-stat { height: 32px; width: 120px; }
+    /* Status pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pill-open { background: var(--amber-dim); color: var(--amber); }
+    .pill-accepted { background: var(--blue-dim); color: var(--blue); }
+    .pill-submitted { background: var(--purple-dim); color: var(--purple); }
+    .pill-released { background: var(--accent-dim); color: var(--accent); }
+    .pill-disputed { background: var(--red-dim); color: var(--red); }
+    .pill-refunded { background: var(--gray-dim); color: var(--gray); }
 
-/* ═══ Responsive ═══ */
-@media (max-width: 768px) {
-  .hero { padding: var(--s-9) 0 var(--s-7); }
-  .hero-title { font-size: 2.25rem; }
-  .stats-bar { grid-template-columns: repeat(2, 1fr); }
-  .dash-grid { grid-template-columns: 1fr; }
-  .flow { grid-template-columns: 1fr; gap: var(--s-5); }
-  .flow::before { display: none; }
-  .scoring-grid { grid-template-columns: 1fr; }
-  .tiers { grid-template-columns: repeat(2, 1fr); }
-  .tiers .tier:last-child { grid-column: 1 / -1; }
-  .score-layout { grid-template-columns: 1fr; justify-items: center; }
-  .score-meta-grid { grid-template-columns: repeat(2, 1fr); }
-  .features-grid { grid-template-columns: 1fr; }
-  .arch-layer { flex-direction: column; align-items: center; }
-  .nav-status { display: none; }
-  .footer-inner { flex-direction: column; text-align: center; }
-  .footer-links { flex-wrap: wrap; justify-content: center; }
-}
-@media (max-width: 480px) {
-  .nav-tab { padding: var(--s-2) var(--s-3); font-size: 0.75rem; }
-  .stats-bar-value { font-size: 1.125rem; }
-  .hero-actions { flex-direction: column; align-items: center; }
-  .stat-cards { grid-template-columns: 1fr; }
-}
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+      color: var(--text-tertiary);
+    }
 
-/* ═══ Reduced motion ═══ */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .reveal { opacity: 1 !important; transform: none !important; }
-  .particles, .bg-blob { display: none; }
-}
+    .empty-state-icon {
+      font-size: 2rem;
+      margin-bottom: var(--space-md);
+      opacity: 0.4;
+    }
 
-/* ═══ Scroll reveal ═══ */
-.reveal {
-  opacity: 0; transform: translateY(20px);
-  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
+    .empty-state p {
+      font-size: 0.9rem;
+    }
 
-/* ═══ Demo mode toggle ═══ */
-.demo-toggle {
-  position: fixed; bottom: var(--s-6); right: var(--s-6); z-index: 200;
-  display: flex; align-items: center; gap: var(--s-3);
-  padding: var(--s-3) var(--s-5);
-  background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: var(--r-full);
-  font-size: 0.75rem; color: var(--text-2);
-  cursor: pointer;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  transition: all 0.2s;
-  user-select: none;
-}
-.demo-toggle:hover { border-color: var(--accent); color: var(--text-0); }
-.demo-toggle.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.demo-switch {
-  width: 32px; height: 18px; border-radius: 9px;
-  background: var(--bg-3); position: relative;
-  transition: background 0.2s;
-}
-.demo-switch::after {
-  content: ''; position: absolute; top: 3px; left: 3px;
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--text-3); transition: all 0.2s;
-}
-.demo-toggle.active .demo-switch { background: var(--accent); }
-.demo-toggle.active .demo-switch::after { left: 17px; background: var(--bg-0); }
+    /* ===== Escrow Detail / State Machine ===== */
+    .detail-panel {
+      margin-top: var(--space-lg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      padding: var(--space-lg);
+      display: none;
+    }
 
-/* ═══ Copy tooltip ═══ */
-.copy-wrap { position: relative; cursor: pointer; }
-.copy-tooltip {
-  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-  padding: var(--s-1) var(--s-3); border-radius: var(--r-sm);
-  background: var(--accent); color: var(--bg-0);
-  font-size: 0.65rem; font-weight: 600;
-  white-space: nowrap; pointer-events: none;
-  opacity: 0; transition: opacity 0.2s;
-  margin-bottom: var(--s-1);
-}
-.copy-tooltip.show { opacity: 1; }
+    .detail-panel.visible {
+      display: block;
+    }
 
-/* ═══ Activity feed ═══ */
-.activity-feed { display: flex; flex-direction: column; gap: 1px; }
-.activity-item {
-  display: flex; align-items: center; gap: var(--s-4);
-  padding: var(--s-3) var(--s-4);
-  background: var(--bg-1);
-  transition: background 0.15s;
-}
-.activity-item:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
-.activity-item:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
-.activity-item:hover { background: var(--bg-2); }
-.activity-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-}
-.activity-text { font-size: 0.8125rem; color: var(--text-1); flex: 1; }
-.activity-text .hl { color: var(--accent); font-family: var(--mono); font-size: 0.75rem; }
-.activity-time { font-size: 0.7rem; color: var(--text-3); font-family: var(--mono); flex-shrink: 0; }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+    }
 
-/* ═══ Focus styles (a11y) ═══ */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.nav-tab:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible,
-.lookup-btn:focus-visible { outline-offset: 3px; }
+    .detail-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
 
-/* ═══ Skip link (a11y) ═══ */
-.skip-link {
-  position: fixed; top: -100px; left: var(--s-4); z-index: 999;
-  padding: var(--s-3) var(--s-5); background: var(--accent); color: var(--bg-0);
-  font-weight: 600; border-radius: var(--r-md);
-  transition: top 0.2s;
-}
-.skip-link:focus { top: var(--s-4); }
-</style>
+    .detail-close {
+      background: none;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: var(--font-sans);
+      transition: border-color var(--duration-fast) var(--ease-out),
+                  color var(--duration-fast) var(--ease-out);
+    }
+
+    .detail-close:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .detail-close:active {
+      background: var(--bg-card-hover);
+    }
+
+    /* State Machine */
+    .state-machine {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: var(--space-xl);
+      overflow-x: auto;
+      padding-bottom: var(--space-sm);
+    }
+
+    .state-node {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+      background: transparent;
+      white-space: nowrap;
+      min-width: 80px;
+    }
+
+    .state-node.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .state-node.past {
+      border-color: var(--border-hover);
+      color: var(--text-secondary);
+    }
+
+    .state-arrow {
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+      padding: 0 var(--space-sm);
+      flex-shrink: 0;
+    }
+
+    /* Detail grid */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .detail-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .detail-field-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+    }
+
+    .detail-field-value {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    /* Event timeline */
+    .timeline {
+      position: relative;
+      padding-left: var(--space-lg);
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 4px;
+      bottom: 4px;
+      width: 1px;
+      background: var(--border-subtle);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: var(--space-md);
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: calc(-1 * var(--space-lg) + 2px);
+      top: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-primary);
+    }
+
+    .timeline-event {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .timeline-detail {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .timeline-empty {
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    /* ===== How It Works ===== */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+
+    @media (max-width: 768px) {
+      .steps-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .step-card {
+      padding: var(--space-lg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      transition: border-color var(--duration-normal) var(--ease-out);
+    }
+
+    .step-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-bottom: var(--space-md);
+    }
+
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      margin-bottom: var(--space-md);
+      color: var(--text-secondary);
+    }
+
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+    }
+
+    .step-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ===== Architecture ===== */
+    .arch-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2xl);
+      padding: var(--space-2xl) 0;
+      flex-wrap: wrap;
+    }
+
+    .arch-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-lg) var(--space-xl);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      min-width: 160px;
+      text-align: center;
+      transition: border-color var(--duration-normal) var(--ease-out);
+    }
+
+    .arch-node:hover {
+      border-color: var(--border-hover);
+    }
+
+    .arch-node.contract {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .arch-node-icon {
+      width: 36px;
+      height: 36px;
+      color: var(--text-secondary);
+    }
+
+    .arch-node.contract .arch-node-icon {
+      color: var(--accent);
+    }
+
+    .arch-node-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .arch-node-sub {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    .arch-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-tertiary);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+
+    .arch-arrow-line {
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 640px) {
+      .arch-diagram {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+      .arch-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--space-xl) 0;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+
+    .footer-text a {
+      color: var(--text-secondary);
+    }
+
+    .footer-text a:hover {
+      color: var(--accent);
+    }
+
+    .footer-contract {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      margin-top: var(--space-sm);
+    }
+
+    /* ===== Loading Skeletons ===== */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 40%, var(--bg-card-hover) 50%, var(--bg-card) 60%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    .skeleton-row {
+      height: 48px;
+      margin-bottom: 1px;
+    }
+
+    /* ===== Error Banner ===== */
+    .error-banner {
+      background: var(--red-dim);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md);
+      margin-bottom: var(--space-lg);
+      font-size: 0.85rem;
+      color: var(--red);
+      display: none;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    /* ===== Reduced Motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ===== Mobile ===== */
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 var(--space-md);
+      }
+
+      .hero {
+        padding: var(--space-2xl) 0 var(--space-xl);
+      }
+
+      .stats-row {
+        gap: var(--space-lg);
+      }
+
+      .stat-value {
+        font-size: 1.35rem;
+      }
+
+      .section {
+        padding: var(--space-2xl) 0;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .state-machine {
+        gap: 0;
+      }
+
+      .state-node {
+        padding: 6px 10px;
+        font-size: 0.65rem;
+        min-width: 60px;
+      }
+
+      .state-arrow {
+        padding: 0 4px;
+        font-size: 0.75rem;
+      }
+    }
+
+    /* ===== Noscript ===== */
+    noscript .noscript-msg {
+      text-align: center;
+      padding: var(--space-3xl);
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
-<body data-ambient="dashboard">
-<noscript><div style="background:#00d4aa;color:#06060b;text-align:center;padding:12px;font-family:sans-serif;font-weight:600">Mellow requires JavaScript to load live data from Sepolia. Please enable JavaScript.</div></noscript>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
 
-<!-- Living background -->
-<div class="bg-layer">
-  <div class="bg-blob bg-blob-1"></div>
-  <div class="bg-blob bg-blob-2"></div>
-  <div class="bg-blob bg-blob-3"></div>
-  <div class="bg-grid"></div>
-</div>
-<div class="particles" id="particles"></div>
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" aria-label="Overview">
+      <div class="container">
+        <h1 class="hero-title">Agent Escrow Protocol</h1>
+        <p class="hero-subtitle">Trustless agent-to-agent commerce on Ethereum</p>
 
-<a href="#main-content" class="skip-link">Skip to content</a>
-
-<!-- ═══ Nav ═══ -->
-<nav class="nav" role="navigation" aria-label="Main navigation">
-  <div class="nav-inner">
-    <div class="nav-left">
-      <div class="nav-logo">mellow</div>
-      <div class="nav-status">
-        <span class="nav-dot"></span>
-        <span id="connection-status">Connecting...</span>
-      </div>
-    </div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
-      <button class="nav-tab" data-tab="how">How It Works</button>
-      <button class="nav-tab" data-tab="arch">Architecture</button>
-    </div>
-  </div>
-</nav>
-
-<div class="container" id="main-content">
-
-<!-- ═══ Demo Mode Toggle ═══ -->
-<div class="demo-toggle" id="demo-toggle" onclick="toggleDemo()" role="switch" aria-checked="false" aria-label="Toggle demo mode with sample data" tabindex="0">
-  <span>Demo Mode</span>
-  <div class="demo-switch"></div>
-</div>
-
-<!-- ═══════════ DASHBOARD ═══════════ -->
-<div class="page active" id="page-dashboard">
-
-  <section class="hero">
-    <div class="hero-eyebrow">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Live on Sepolia Testnet
-    </div>
-    <h1 class="hero-title">
-      <span class="gradient">Autonomous</span><br>AI Lending Agent
-    </h1>
-    <p class="hero-sub">
-      Mellow analyzes on-chain behavior, scores creditworthiness, and makes lending decisions autonomously. No humans in the loop.
-    </p>
-    <div class="hero-actions">
-      <a href="https://t.me/mellow_lend_bot" class="btn-primary" target="_blank">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.28-.02-.12.03-2.02 1.28-5.69 3.77-.54.37-1.03.55-1.47.54-.48-.01-1.41-.27-2.1-.5-.85-.28-1.53-.43-1.47-.91.03-.25.38-.51 1.05-.78 4.12-1.79 6.87-2.97 8.26-3.54 3.93-1.62 4.75-1.9 5.28-1.91.12 0 .37.03.54.17.14.12.18.28.2.47-.01.06.01.24 0 .37z"/></svg>
-        Try on Telegram
-      </a>
-      <a href="#score-section" class="btn-secondary" onclick="event.preventDefault(); document.getElementById('score-section').scrollIntoView({behavior:'smooth'}); setTimeout(() => document.getElementById('score-input').focus(), 500)">
-        Check a Credit Score
-      </a>
-    </div>
-
-    <div class="stats-bar">
-      <div class="stats-bar-item">
-        <div class="stats-bar-value" id="bar-total"><div class="skeleton skeleton-stat" style="margin:0 auto"></div></div>
-        <div class="stats-bar-label">Total Pool</div>
-      </div>
-      <div class="stats-bar-item">
-        <div class="stats-bar-value" id="bar-util"><div class="skeleton skeleton-stat" style="margin:0 auto"></div></div>
-        <div class="stats-bar-label">Utilization</div>
-      </div>
-      <div class="stats-bar-item">
-        <div class="stats-bar-value" id="bar-loans"><div class="skeleton skeleton-stat" style="margin:0 auto"></div></div>
-        <div class="stats-bar-label">Total Loans</div>
-      </div>
-      <div class="stats-bar-item">
-        <div class="stats-bar-value" id="bar-aave"><div class="skeleton skeleton-stat" style="margin:0 auto"></div></div>
-        <div class="stats-bar-label">Earning in Aave</div>
-      </div>
-    </div>
-    <div id="last-updated" style="text-align:center;font-size:0.7rem;color:var(--text-3);font-family:var(--mono);margin-top:var(--s-2)"></div>
-  </section>
-
-  <!-- Pool allocation + Key stats -->
-  <div class="dash-grid reveal">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Pool Allocation</div>
-        <div class="card-badge" style="color:var(--accent);background:var(--accent-dim)" id="pool-health">Healthy</div>
-      </div>
-      <div class="pool-alloc">
-        <div class="donut-wrap">
-          <svg id="donut" width="140" height="140" viewBox="0 0 140 140"></svg>
-          <div class="donut-center">
-            <div class="donut-value" id="donut-total">—</div>
-            <div class="donut-label">USDT</div>
+        <div class="stats-row" id="stats-row">
+          <div class="stat-item">
+            <div class="stat-value loading" id="stat-total">--</div>
+            <div class="stat-label">Total Escrows</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value loading" id="stat-volume">--</div>
+            <div class="stat-label">Total Volume (USDT)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value loading" id="stat-rate">--</div>
+            <div class="stat-label">Completion Rate</div>
           </div>
         </div>
-        <div class="alloc-legend" id="alloc-legend"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Key Metrics</div>
-      </div>
-      <div class="stat-cards" id="stat-cards">
-        <div class="stat-card"><div class="stat-card-value" id="mc-idle">—</div><div class="stat-card-label">Idle Balance</div></div>
-        <div class="stat-card"><div class="stat-card-value" id="mc-loaned">—</div><div class="stat-card-label">Active Loans</div></div>
-        <div class="stat-card"><div class="stat-card-value" id="mc-aave">—</div><div class="stat-card-label">In Aave V3</div></div>
-        <div class="stat-card"><div class="stat-card-value" id="mc-count">—</div><div class="stat-card-label">Loans Issued</div></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Recent loans -->
-  <div class="card reveal reveal-delay-1">
-    <div class="card-header">
-      <div class="card-title">Recent Loans</div>
-      <div class="card-badge" style="color:var(--text-3);background:var(--bg-2)" id="loan-count-badge">Loading...</div>
-    </div>
-    <div id="loans-container">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Borrower</th><th>Amount</th><th>Rate</th><th>Score</th><th>Duration</th><th>Status</th></tr>
-          </thead>
-          <tbody id="loans-body">
-            <tr><td colspan="7"><div style="display:flex;flex-direction:column;gap:8px;padding:8px 0"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text" style="width:60%"></div></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Credit score lookup -->
-  <div class="card reveal reveal-delay-2" id="score-section">
-    <div class="card-header">
-      <div class="card-title">Credit Score Lookup</div>
-    </div>
-    <div class="lookup-form">
-      <input type="text" class="lookup-input" id="score-input" placeholder="Enter wallet address (0x...)" spellcheck="false" autocomplete="off" aria-label="Ethereum wallet address for credit score lookup">
-      <button class="lookup-btn" id="score-btn" onclick="lookupScore()">Check Score</button>
-    </div>
-    <div id="score-error" class="error-msg"></div>
-    <div class="score-display" id="score-display">
-      <div class="score-layout">
-        <div class="gauge-wrap">
-          <svg class="gauge-svg" id="gauge-svg" viewBox="0 0 200 130"></svg>
-          <div class="gauge-score" id="gauge-score"></div>
-          <div class="gauge-label" id="gauge-label"></div>
-        </div>
-        <div class="score-details">
-          <div class="score-meta-grid" id="score-meta"></div>
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Powered by WDK
         </div>
       </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- ═══════════ HOW IT WORKS ═══════════ -->
-<div class="page" id="page-how">
-  <div class="section-header" style="padding-top:var(--s-6)">
-    <div class="section-title">How Mellow Works</div>
-    <div class="section-sub">From loan application to repayment, fully autonomous.</div>
-  </div>
+    <!-- Escrow Board -->
+    <section class="section" aria-label="Escrow board">
+      <div class="container">
+        <div class="board-header">
+          <div class="board-header-left">
+            <div class="section-label">Live Data</div>
+            <h2 class="section-title">Escrow Board</h2>
+          </div>
+          <div class="refresh-info" id="refresh-info">Loading...</div>
+        </div>
 
-  <div class="flow reveal">
-    <div class="flow-step">
-      <div class="flow-icon">
-        <span class="flow-num">1</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      </div>
-      <div class="flow-title">Apply</div>
-      <div class="flow-desc">Request a loan via Telegram with amount and duration</div>
-    </div>
-    <div class="flow-step">
-      <div class="flow-icon">
-        <span class="flow-num">2</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-      </div>
-      <div class="flow-title">Score</div>
-      <div class="flow-desc">On-chain history analyzed across 7 dimensions</div>
-    </div>
-    <div class="flow-step">
-      <div class="flow-icon">
-        <span class="flow-num">3</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-      </div>
-      <div class="flow-title">AI Decision</div>
-      <div class="flow-desc">Claude AI evaluates risk and sets loan terms</div>
-    </div>
-    <div class="flow-step">
-      <div class="flow-icon">
-        <span class="flow-num">4</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </div>
-      <div class="flow-title">Disburse</div>
-      <div class="flow-desc">USDT sent to borrower. Loan recorded on-chain</div>
-    </div>
-    <div class="flow-step">
-      <div class="flow-icon">
-        <span class="flow-num">5</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </div>
-      <div class="flow-title">Repay</div>
-      <div class="flow-desc">Borrower repays. Credit score improves. Pool grows.</div>
-    </div>
-  </div>
+        <div class="error-banner" id="error-banner" role="alert"></div>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">Credit Scoring Components</div>
-      <div class="card-badge" style="color:var(--text-2);background:var(--bg-2)">850 max</div>
-    </div>
-    <div class="scoring-grid">
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--accent-dim);color:var(--accent)">&#x23F3;</div>
-        <div class="scoring-info"><div class="scoring-name">Wallet Age</div><div class="scoring-detail">30d = 50 | 90d = 100 | 365d+ = 150</div></div>
-        <div class="scoring-pts">150</div>
-      </div>
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--blue-dim);color:var(--blue)">&#x26A1;</div>
-        <div class="scoring-info"><div class="scoring-name">TX Activity</div><div class="scoring-detail">10tx = 50 | 50tx = 100 | 200+ = 150</div></div>
-        <div class="scoring-pts">150</div>
-      </div>
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--accent-dim);color:var(--accent)">&#x1F4B5;</div>
-        <div class="scoring-info"><div class="scoring-name">USDT Volume</div><div class="scoring-detail">$1K = 50 | $10K = 100 | $50K+ = 150</div></div>
-        <div class="scoring-pts">150</div>
-      </div>
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--yellow-dim);color:var(--yellow)">&#x1F4BC;</div>
-        <div class="scoring-info"><div class="scoring-name">Portfolio Diversity</div><div class="scoring-detail">10 pts per token held</div></div>
-        <div class="scoring-pts">100</div>
-      </div>
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--blue-dim);color:var(--blue)">&#x1F3E6;</div>
-        <div class="scoring-info"><div class="scoring-name">DeFi Experience</div><div class="scoring-detail">20 pts per active position</div></div>
-        <div class="scoring-pts">100</div>
-      </div>
-      <div class="scoring-row">
-        <div class="scoring-icon" style="background:var(--accent-dim);color:var(--accent)">&#x2764;</div>
-        <div class="scoring-info"><div class="scoring-name">Balance Health</div><div class="scoring-detail">ETH + USDT + no liquidations</div></div>
-        <div class="scoring-pts">100</div>
-      </div>
-      <div class="scoring-row" style="grid-column: 1 / -1; max-width: calc(50% - 10px);">
-        <div class="scoring-icon" style="background:var(--yellow-dim);color:var(--yellow)">&#x1F4C8;</div>
-        <div class="scoring-info"><div class="scoring-name">On-chain History</div><div class="scoring-detail">+25 per repayment, -50 per default</div></div>
-        <div class="scoring-pts">100</div>
-      </div>
-    </div>
-  </div>
+        <div id="board-content">
+          <!-- Loading skeleton -->
+          <div class="escrow-table-wrap" id="skeleton-wrap">
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+          </div>
+        </div>
 
-  <div class="card" style="margin-top:var(--s-5)">
-    <div class="card-header">
-      <div class="card-title">Decision Tiers</div>
-    </div>
-    <div class="tiers">
-      <div class="tier">
-        <div class="tier-range">750-850</div>
-        <div class="tier-decision" style="color:var(--accent)">APPROVE</div>
-        <div class="tier-rate">5% APR</div>
-        <div class="tier-pool">up to 10% of pool</div>
-      </div>
-      <div class="tier">
-        <div class="tier-range">650-749</div>
-        <div class="tier-decision" style="color:var(--accent)">APPROVE</div>
-        <div class="tier-rate">8% APR</div>
-        <div class="tier-pool">up to 7% of pool</div>
-      </div>
-      <div class="tier">
-        <div class="tier-range">550-649</div>
-        <div class="tier-decision" style="color:var(--accent)">APPROVE</div>
-        <div class="tier-rate">12% APR</div>
-        <div class="tier-pool">up to 5% of pool</div>
-      </div>
-      <div class="tier">
-        <div class="tier-range">450-549</div>
-        <div class="tier-decision" style="color:var(--yellow)">NEGOTIATE</div>
-        <div class="tier-rate">15% APR</div>
-        <div class="tier-pool">up to 3% of pool</div>
-      </div>
-      <div class="tier">
-        <div class="tier-range">300-449</div>
-        <div class="tier-decision" style="color:var(--red)">DENY</div>
-        <div class="tier-rate">-</div>
-        <div class="tier-pool">no loan issued</div>
-      </div>
-    </div>
-  </div>
-</div>
+        <!-- Detail panel -->
+        <div class="detail-panel" id="detail-panel" aria-label="Escrow details">
+          <div class="detail-header">
+            <div class="detail-title" id="detail-title">Escrow #0</div>
+            <button class="detail-close" id="detail-close" aria-label="Close detail panel">Close</button>
+          </div>
 
-<!-- ═══════════ ARCHITECTURE ═══════════ -->
-<div class="page" id="page-arch">
-  <div class="section-header" style="padding-top:var(--s-6)">
-    <div class="section-title">System Architecture</div>
-    <div class="section-sub">End-to-end autonomous lending pipeline</div>
-  </div>
+          <!-- State Machine Visualization -->
+          <div class="section-label">State Machine</div>
+          <div class="state-machine" id="state-machine" role="img" aria-label="Escrow state flow"></div>
 
-  <div class="arch-visual reveal">
-    <div class="arch-layers">
-      <div class="arch-layer">
-        <div class="arch-node primary">
-          <div class="arch-node-name">Telegram User</div>
-          <div class="arch-node-desc">Borrowers & Lenders</div>
+          <!-- Detail Fields -->
+          <div class="section-label" style="margin-top: var(--space-lg);">Details</div>
+          <div class="detail-grid" id="detail-grid"></div>
+
+          <!-- Event Timeline -->
+          <div class="section-label">Event Timeline</div>
+          <div class="timeline" id="detail-timeline"></div>
         </div>
       </div>
-      <div class="arch-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
-      <div class="arch-layer">
-        <div class="arch-node primary">
-          <div class="arch-node-name">OpenClaw Runtime</div>
-          <div class="arch-node-desc">Agent orchestration + Claude LLM</div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section" aria-label="How it works">
+      <div class="container">
+        <div class="section-label">Process</div>
+        <h2 class="section-title">How It Works</h2>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <h3 class="step-title">Create</h3>
+            <p class="step-desc">Client agent locks USDT into escrow with a task hash and deadline.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <h3 class="step-title">Accept</h3>
+            <p class="step-desc">Worker agent reviews the task and accepts the escrow contract.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <h3 class="step-title">Submit</h3>
+            <p class="step-desc">Worker submits a result hash proving work completion on-chain.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">04</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <h3 class="step-title">Release</h3>
+            <p class="step-desc">Funds are released to the worker. Disputes go to a verifier.</p>
+          </div>
         </div>
       </div>
-      <div class="arch-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
-      <div class="arch-layer">
-        <div class="arch-node">
-          <div class="arch-node-name">Credit Scorer</div>
-          <div class="arch-node-desc">Etherscan + Covalent + WDK</div>
-        </div>
-        <div class="arch-node">
-          <div class="arch-node-name">WDK SDK</div>
-          <div class="arch-node-desc">Wallet ops & tx signing</div>
-        </div>
-        <div class="arch-node">
-          <div class="arch-node-name">LLM Reasoner</div>
-          <div class="arch-node-desc">Claude Haiku decisions</div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="section" aria-label="Architecture">
+      <div class="container">
+        <div class="section-label">System Design</div>
+        <h2 class="section-title">Architecture</h2>
+
+        <div class="arch-diagram">
+          <div class="arch-node">
+            <svg class="arch-node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span class="arch-node-label">Client Agent</span>
+            <span class="arch-node-sub">WDK Wallet</span>
+          </div>
+
+          <div class="arch-arrow">
+            <span>create / release</span>
+            <span class="arch-arrow-line">&rarr;</span>
+          </div>
+
+          <div class="arch-node contract">
+            <svg class="arch-node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M7 7h10M7 12h10M7 17h4"/>
+            </svg>
+            <span class="arch-node-label">AgentEscrow</span>
+            <span class="arch-node-sub">Smart Contract</span>
+          </div>
+
+          <div class="arch-arrow">
+            <span>accept / submit</span>
+            <span class="arch-arrow-line">&larr;</span>
+          </div>
+
+          <div class="arch-node">
+            <svg class="arch-node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span class="arch-node-label">Worker Agent</span>
+            <span class="arch-node-sub">WDK Wallet</span>
+          </div>
         </div>
       </div>
-      <div class="arch-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
-      <div class="arch-layer">
-        <div class="arch-node">
-          <div class="arch-node-name">LoanPool.sol</div>
-          <div class="arch-node-desc">Deposits, loans, shares</div>
-        </div>
-        <div class="arch-node">
-          <div class="arch-node-name">CreditRegistry.sol</div>
-          <div class="arch-node-desc">On-chain credit scores</div>
-        </div>
-        <div class="arch-node">
-          <div class="arch-node-name">Aave V3</div>
-          <div class="arch-node-desc">Idle capital yield</div>
-        </div>
-      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-text">
+        Built with <a href="https://walletsdk.org" target="_blank" rel="noopener">WDK</a>
+      </p>
+      <p class="footer-contract">
+        <a href="https://sepolia.etherscan.io/address/0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6" target="_blank" rel="noopener">0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6</a>
+        &middot; Sepolia
+      </p>
     </div>
-  </div>
+  </footer>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">Tech Stack</div>
+  <noscript>
+    <div class="noscript-msg container">
+      <p>This dashboard requires JavaScript to load live data from the Sepolia network.</p>
     </div>
-    <div class="badges">
-      <span class="badge">Solidity 0.8.24</span>
-      <span class="badge">TypeScript</span>
-      <span class="badge">Claude AI (Haiku)</span>
-      <span class="badge">WDK SDK</span>
-      <span class="badge">Aave V3</span>
-      <span class="badge">OpenClaw</span>
-      <span class="badge">ethers.js v6</span>
-      <span class="badge">Foundry</span>
-      <span class="badge">OpenZeppelin v5</span>
-    </div>
-  </div>
+  </noscript>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">Deployed Contracts</div>
-      <div class="card-badge" style="color:var(--accent);background:var(--accent-dim)">Sepolia</div>
-    </div>
-    <div class="contracts-list">
-      <div class="contract-row">
-        <div class="contract-left">
-          <div class="contract-icon">$</div>
-          <div><div class="contract-name">MockUSDT</div><div class="contract-desc">ERC-20 test stablecoin</div></div>
-        </div>
-        <div class="copy-wrap" onclick="copyAddr('0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B', this)">
-          <a class="contract-addr" href="https://sepolia.etherscan.io/address/0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B" target="_blank" onclick="event.stopPropagation()">0xf9e5...326B &#x2197;</a>
-          <div class="copy-tooltip">Copied!</div>
-        </div>
-      </div>
-      <div class="contract-row">
-        <div class="contract-left">
-          <div class="contract-icon">&#x2605;</div>
-          <div><div class="contract-name">CreditRegistry</div><div class="contract-desc">On-chain credit profiles</div></div>
-        </div>
-        <div class="copy-wrap" onclick="copyAddr('0xb8F4546e24e437779bC09c3b70ce70Ff9542bdD4', this)">
-          <a class="contract-addr" href="https://sepolia.etherscan.io/address/0xb8F4546e24e437779bC09c3b70ce70Ff9542bdD4" target="_blank" onclick="event.stopPropagation()">0xb8F4...bdD4 &#x2197;</a>
-          <div class="copy-tooltip">Copied!</div>
-        </div>
-      </div>
-      <div class="contract-row">
-        <div class="contract-left">
-          <div class="contract-icon">&#x26A1;</div>
-          <div><div class="contract-name">LoanPool</div><div class="contract-desc">Core lending pool</div></div>
-        </div>
-        <div class="copy-wrap" onclick="copyAddr('0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E', this)">
-          <a class="contract-addr" href="https://sepolia.etherscan.io/address/0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E" target="_blank" onclick="event.stopPropagation()">0x9A6d...4E4E &#x2197;</a>
-          <div class="copy-tooltip">Copied!</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <script type="module">
+    // ===== Contract Config =====
+    const ESCROW_ADDR = '0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6';
+    const USDT_ADDR = '0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B';
+    const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
 
-  <div class="card">
-    <div class="card-header"><div class="card-title">Capabilities</div></div>
-    <div class="features-grid">
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#x1F916;</div>
-        <div class="feature-title">Autonomous Decisions</div>
-        <div class="feature-desc">AI agent evaluates risk and approves loans without human intervention</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">&#x1F4CA;</div>
-        <div class="feature-title">7-Factor Scoring</div>
-        <div class="feature-desc">Credit scores derived from wallet age, activity, volume, DeFi usage, and more</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--yellow-dim);color:var(--yellow)">&#x1F4B0;</div>
-        <div class="feature-title">Yield Optimization</div>
-        <div class="feature-desc">Idle pool capital automatically deployed to Aave V3 for yield</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">&#x1F512;</div>
-        <div class="feature-title">On-chain Guardrails</div>
-        <div class="feature-desc">Smart contracts enforce max loan amounts, minimum scores, and grace periods</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">&#x1F4B1;</div>
-        <div class="feature-title">WDK Integration</div>
-        <div class="feature-desc">Programmatic wallet operations via Tether's Wallet Development Kit</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon" style="background:var(--yellow-dim);color:var(--yellow)">&#x1F4AC;</div>
-        <div class="feature-title">Telegram Interface</div>
-        <div class="feature-desc">Natural language interaction through Telegram bot powered by OpenClaw</div>
-      </div>
-    </div>
-  </div>
-</div>
+    const ESCROW_ABI = [
+      'function getEscrow(uint256 id) view returns (tuple(address client, address worker, address verifier, address token, uint256 amount, uint256 fee, uint64 deadline, bytes32 taskHash, bytes32 resultHash, uint8 status))',
+      'function nextId() view returns (uint256)',
+      'function feeBps() view returns (uint256)',
+      'function treasury() view returns (address)',
+      'event Created(uint256 indexed id, address indexed client, address worker, uint256 amount, bytes32 taskHash)',
+      'event Accepted(uint256 indexed id, address indexed worker)',
+      'event WorkSubmitted(uint256 indexed id, bytes32 resultHash)',
+      'event Released(uint256 indexed id, address indexed worker, uint256 amount)',
+      'event Disputed(uint256 indexed id, address indexed by, bytes32 reason)',
+      'event DisputeResolved(uint256 indexed id, bool releasedToWorker)',
+      'event Refunded(uint256 indexed id, address indexed client, uint256 amount)',
+    ];
 
-<!-- Footer -->
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-left">
-      <span class="footer-brand">mellow</span>
-      <span class="footer-sep">/</span>
-      <span>Autonomous AI Lending Agent</span>
-    </div>
-    <div class="footer-links">
-      <a href="https://sepolia.etherscan.io/address/0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E" target="_blank">Contracts</a>
-      <span class="footer-sep">/</span>
-      <a href="https://t.me/mellow_lend_bot" target="_blank">Telegram</a>
-      <span class="footer-sep">/</span>
-      <span>Built for the Tether Hackathon 2026</span>
-    </div>
-  </div>
-</footer>
+    const STATUS_NAMES = ['Open', 'Accepted', 'Submitted', 'Released', 'Disputed', 'Refunded'];
+    const STATUS_CLASSES = ['open', 'accepted', 'submitted', 'released', 'disputed', 'refunded'];
 
-</div>
+    // ===== State =====
+    let escrows = [];
+    let selectedId = null;
+    let provider = null;
+    let contract = null;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
-<script>
-// ═══ Config ═══
-const RPC = 'https://ethereum-sepolia-rpc.publicnode.com';
-const ADDRS = {
-  usdt:     '0xf9e5a9E147856D9B26aB04202D79C2c3dA4a326B',
-  registry: '0xb8F4546e24e437779bC09c3b70ce70Ff9542bdD4',
-  pool:     '0x9A6d36A0487EA52df43E7704a97F47844C4Eac4E',
-};
-const POOL_ABI = [
-  'function getPoolStats() view returns (uint256, uint256, uint256, uint256, uint256, uint256)',
-  'function getLoan(uint256) view returns (tuple(address borrower, uint256 principal, uint256 rateAPR, uint64 startTime, uint64 duration, uint64 repaidTime, uint8 status, uint16 creditScore, uint8 confidence, string reasoning))',
-  'function nextLoanId() view returns (uint256)',
-];
-const REGISTRY_ABI = [
-  'function getProfile(address) view returns (tuple(uint16 score, uint32 totalLoans, uint32 repaidLoans, uint32 defaultedLoans, uint64 lastUpdated, bool exists))',
-];
-
-// ═══ Init ═══
-const provider = new ethers.JsonRpcProvider(RPC);
-const pool = new ethers.Contract(ADDRS.pool, POOL_ABI, provider);
-const registry = new ethers.Contract(ADDRS.registry, REGISTRY_ABI, provider);
-
-// ═══ Helpers ═══
-const toNum = (v) => Number(ethers.formatUnits(v, 6));
-const fmt = (n) => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const fmtK = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'K' : n.toFixed(0);
-const truncAddr = (a) => a.slice(0,6) + '...' + a.slice(-4);
-const STATUS_TEXT = ['Active', 'Repaid', 'Defaulted'];
-const STATUS_PILL = ['pill-active', 'pill-repaid', 'pill-defaulted'];
-
-// ═══ Animated counter ═══
-const _lastValues = new Map();
-function animateValue(el, target, prefix = '', suffix = '', duration = 800) {
-  const key = el.id || el;
-  const prev = _lastValues.get(key);
-  if (prev === target) return; // skip if unchanged
-  _lastValues.set(key, target);
-  const from = typeof prev === 'number' ? prev : 0;
-  const start = performance.now();
-  const step = (now) => {
-    const progress = Math.min((now - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-    const current = from + (target - from) * ease;
-    if (typeof target === 'number' && target % 1 !== 0) {
-      el.textContent = prefix + fmt(current) + suffix;
-    } else {
-      el.textContent = prefix + Math.round(current) + suffix;
+    // ===== Init =====
+    async function init() {
+      try {
+        const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.min.js');
+        provider = new ethers.JsonRpcProvider(RPC_URL);
+        contract = new ethers.Contract(ESCROW_ADDR, ESCROW_ABI, provider);
+        await loadData();
+        setInterval(loadData, 30000);
+      } catch (err) {
+        showError('Failed to connect to Sepolia: ' + err.message);
+        console.error(err);
+      }
     }
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
 
-// ═══ Donut chart ═══
-function drawDonut(idle, loaned, aave, total) {
-  const svg = document.getElementById('donut');
-  const cx = 70, cy = 70, r = 54, sw = 16;
-  const segments = [
-    { val: idle, color: '#00d4aa', label: 'Idle' },
-    { val: aave, color: '#4d9fff', label: 'In Aave' },
-    { val: loaned, color: '#f0b429', label: 'Active Loans' },
-  ].filter(s => s.val > 0);
+    // ===== Data Loading =====
+    async function loadData() {
+      try {
+        const nextIdResult = await contract.nextId();
+        const count = Number(nextIdResult);
 
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
-  let html = '';
+        const promises = [];
+        for (let i = 0; i < count; i++) {
+          promises.push(loadEscrow(i));
+        }
 
-  if (total === 0) {
-    html = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${sw}"/>`;
-  } else {
-    segments.forEach(s => {
-      const pct = s.val / total;
-      const dash = circ * pct;
-      const gap = circ - dash;
-      html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
-        stroke="${s.color}" stroke-width="${sw}"
-        stroke-dasharray="${dash} ${gap}"
-        stroke-dashoffset="${-offset}"
-        transform="rotate(-90 ${cx} ${cy})"
-        style="transition: stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease"/>`;
-      offset += dash;
+        escrows = await Promise.all(promises);
+        hideError();
+        renderStats();
+        renderBoard();
+        updateRefreshTime();
+
+        if (selectedId !== null && selectedId < escrows.length) {
+          renderDetail(selectedId);
+        }
+      } catch (err) {
+        showError('Failed to load escrows: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    async function loadEscrow(id) {
+      const e = await contract.getEscrow(id);
+      return {
+        id,
+        client: e[0],
+        worker: e[1],
+        verifier: e[2],
+        token: e[3],
+        amount: e[4],
+        fee: e[5],
+        deadline: Number(e[6]),
+        taskHash: e[7],
+        resultHash: e[8],
+        status: Number(e[9]),
+      };
+    }
+
+    // ===== Rendering: Stats =====
+    function renderStats() {
+      const totalEl = document.getElementById('stat-total');
+      const volumeEl = document.getElementById('stat-volume');
+      const rateEl = document.getElementById('stat-rate');
+
+      totalEl.textContent = escrows.length.toString();
+      totalEl.classList.remove('loading');
+
+      let totalVolume = 0n;
+      let released = 0;
+
+      for (const e of escrows) {
+        totalVolume += e.amount;
+        if (e.status === 3) released++;
+      }
+
+      const volumeNum = Number(totalVolume) / 1e6;
+      volumeEl.textContent = '$' + formatNumber(volumeNum);
+      volumeEl.classList.remove('loading');
+
+      const rate = escrows.length > 0
+        ? Math.round((released / escrows.length) * 100)
+        : 0;
+      rateEl.textContent = rate + '%';
+      rateEl.classList.remove('loading');
+    }
+
+    function formatNumber(n) {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toFixed(n % 1 === 0 ? 0 : 2);
+    }
+
+    // ===== Rendering: Board =====
+    function renderBoard() {
+      const container = document.getElementById('board-content');
+
+      if (escrows.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary)">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+            </div>
+            <p>No escrows yet. Create the first one to get started.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let rows = '';
+      for (const e of escrows) {
+        const amountStr = (Number(e.amount) / 1e6).toFixed(2);
+        const feeStr = (Number(e.fee) / 1e6).toFixed(2);
+        const statusName = STATUS_NAMES[e.status] || 'Unknown';
+        const statusClass = STATUS_CLASSES[e.status] || 'open';
+        const deadlineStr = formatDeadline(e.deadline);
+        const isSelected = selectedId === e.id;
+
+        rows += `
+          <tr data-id="${e.id}" class="${isSelected ? 'selected' : ''}" tabindex="0" role="button" aria-label="View escrow ${e.id} details">
+            <td class="mono">${e.id}</td>
+            <td><a href="${etherscanAddr(e.client)}" target="_blank" rel="noopener" class="addr" onclick="event.stopPropagation()">${truncAddr(e.client)}</a></td>
+            <td><a href="${etherscanAddr(e.worker)}" target="_blank" rel="noopener" class="addr" onclick="event.stopPropagation()">${truncAddr(e.worker)}</a></td>
+            <td class="mono">${amountStr}</td>
+            <td class="mono">${feeStr}</td>
+            <td><span class="pill pill-${statusClass}">${statusName}</span></td>
+            <td class="mono">${deadlineStr}</td>
+            <td class="addr" title="${e.taskHash}">${truncHash(e.taskHash)}</td>
+          </tr>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="escrow-table-wrap">
+          <table class="escrow-table" role="grid" aria-label="Escrows">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Worker</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th>Task Hash</th>
+              </tr>
+            </thead>
+            <tbody id="escrow-tbody">
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // Attach click handlers
+      const tbody = document.getElementById('escrow-tbody');
+      if (tbody) {
+        tbody.addEventListener('click', (ev) => {
+          const row = ev.target.closest('tr[data-id]');
+          if (row) selectEscrow(Number(row.dataset.id));
+        });
+        tbody.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            const row = ev.target.closest('tr[data-id]');
+            if (row) selectEscrow(Number(row.dataset.id));
+          }
+        });
+      }
+    }
+
+    // ===== Rendering: Detail =====
+    function selectEscrow(id) {
+      if (selectedId === id) {
+        selectedId = null;
+        document.getElementById('detail-panel').classList.remove('visible');
+        renderBoard();
+        return;
+      }
+      selectedId = id;
+      renderBoard();
+      renderDetail(id);
+      document.getElementById('detail-panel').classList.add('visible');
+      document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderDetail(id) {
+      const e = escrows[id];
+      if (!e) return;
+
+      document.getElementById('detail-title').textContent = 'Escrow #' + id;
+
+      renderStateMachine(e.status);
+
+      const grid = document.getElementById('detail-grid');
+      const isZeroAddr = (a) => a === '0x0000000000000000000000000000000000000000';
+      const deadlineDate = new Date(e.deadline * 1000);
+      const deadlineFormatted = e.deadline > 0
+        ? deadlineDate.toLocaleString() + ' (' + formatDeadline(e.deadline) + ')'
+        : 'None';
+
+      grid.innerHTML = `
+        <div class="detail-field">
+          <span class="detail-field-label">Client</span>
+          <a href="${etherscanAddr(e.client)}" target="_blank" rel="noopener" class="detail-field-value addr">${e.client}</a>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Worker</span>
+          ${isZeroAddr(e.worker)
+            ? '<span class="detail-field-value" style="color:var(--text-tertiary)">Not assigned</span>'
+            : `<a href="${etherscanAddr(e.worker)}" target="_blank" rel="noopener" class="detail-field-value addr">${e.worker}</a>`
+          }
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Verifier</span>
+          ${isZeroAddr(e.verifier)
+            ? '<span class="detail-field-value" style="color:var(--text-tertiary)">None</span>'
+            : `<a href="${etherscanAddr(e.verifier)}" target="_blank" rel="noopener" class="detail-field-value addr">${e.verifier}</a>`
+          }
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Amount</span>
+          <span class="detail-field-value">${(Number(e.amount) / 1e6).toFixed(2)} USDT</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Fee</span>
+          <span class="detail-field-value">${(Number(e.fee) / 1e6).toFixed(2)} USDT</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Deadline</span>
+          <span class="detail-field-value">${deadlineFormatted}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Task Hash</span>
+          <span class="detail-field-value">${e.taskHash}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field-label">Result Hash</span>
+          <span class="detail-field-value">${e.resultHash === '0x0000000000000000000000000000000000000000000000000000000000000000' ? 'Pending' : e.resultHash}</span>
+        </div>
+      `;
+
+      loadEscrowEvents(id);
+    }
+
+    function renderStateMachine(currentStatus) {
+      const machine = document.getElementById('state-machine');
+
+      const mainStates = [
+        { status: 0, label: 'Open' },
+        { status: 1, label: 'Accepted' },
+        { status: 2, label: 'Submitted' },
+        { status: 3, label: 'Released' },
+      ];
+
+      let html = '';
+      for (let i = 0; i < mainStates.length; i++) {
+        const s = mainStates[i];
+        let cls = 'state-node';
+        if (s.status === currentStatus) cls += ' active';
+        else if (s.status < currentStatus && currentStatus <= 3) cls += ' past';
+        else if (currentStatus === 4 && s.status <= 2) cls += ' past';
+        else if (currentStatus === 5 && s.status === 0) cls += ' past';
+
+        html += `<div class="${cls}">${s.label}</div>`;
+
+        if (i < mainStates.length - 1) {
+          html += `<span class="state-arrow">&rarr;</span>`;
+        }
+      }
+
+      if (currentStatus === 4) {
+        html += `<span class="state-arrow">&nbsp;&nbsp;</span>`;
+        html += `<div class="state-node active" style="border-color: var(--red); color: var(--red); background: var(--red-dim);">Disputed</div>`;
+      } else if (currentStatus === 5) {
+        html += `<span class="state-arrow">&nbsp;&nbsp;</span>`;
+        html += `<div class="state-node active" style="border-color: var(--gray); color: var(--gray); background: var(--gray-dim);">Refunded</div>`;
+      }
+
+      machine.innerHTML = html;
+    }
+
+    async function loadEscrowEvents(id) {
+      const timeline = document.getElementById('detail-timeline');
+      timeline.innerHTML = '<span class="timeline-empty">Loading events...</span>';
+
+      try {
+        const bigId = BigInt(id);
+
+        const [created, accepted, submitted, released, disputed, resolved, refunded] = await Promise.all([
+          contract.queryFilter(contract.filters.Created(bigId)),
+          contract.queryFilter(contract.filters.Accepted(bigId)),
+          contract.queryFilter(contract.filters.WorkSubmitted(bigId)),
+          contract.queryFilter(contract.filters.Released(bigId)),
+          contract.queryFilter(contract.filters.Disputed(bigId)),
+          contract.queryFilter(contract.filters.DisputeResolved(bigId)),
+          contract.queryFilter(contract.filters.Refunded(bigId)),
+        ]);
+
+        const events = [];
+
+        for (const ev of created) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Created',
+            detail: `by ${truncAddr(ev.args[1])}`,
+          });
+        }
+        for (const ev of accepted) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Accepted',
+            detail: `by ${truncAddr(ev.args[1])}`,
+          });
+        }
+        for (const ev of submitted) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Work Submitted',
+            detail: truncHash(ev.args[1]),
+          });
+        }
+        for (const ev of released) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Released',
+            detail: `${(Number(ev.args[2]) / 1e6).toFixed(2)} USDT to ${truncAddr(ev.args[1])}`,
+          });
+        }
+        for (const ev of disputed) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Disputed',
+            detail: `by ${truncAddr(ev.args[1])}`,
+          });
+        }
+        for (const ev of resolved) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Dispute Resolved',
+            detail: ev.args[1] ? 'Released to worker' : 'Returned to client',
+          });
+        }
+        for (const ev of refunded) {
+          events.push({
+            block: ev.blockNumber,
+            name: 'Refunded',
+            detail: `${(Number(ev.args[2]) / 1e6).toFixed(2)} USDT to ${truncAddr(ev.args[1])}`,
+          });
+        }
+
+        events.sort((a, b) => a.block - b.block);
+
+        if (events.length === 0) {
+          timeline.innerHTML = '<span class="timeline-empty">No events found for this escrow.</span>';
+          return;
+        }
+
+        timeline.innerHTML = events.map(ev => `
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-event">${ev.name}</div>
+            <div class="timeline-detail">${ev.detail} &middot; Block ${ev.block}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        timeline.innerHTML = `<span class="timeline-empty">Could not load events: ${err.message}</span>`;
+        console.error('Event loading error:', err);
+      }
+    }
+
+    // ===== Helpers =====
+    function truncAddr(addr) {
+      if (!addr || addr.length < 10) return addr || '---';
+      return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+
+    function truncHash(hash) {
+      if (!hash || hash.length < 14) return hash || '---';
+      return hash.slice(0, 10) + '...' + hash.slice(-4);
+    }
+
+    function etherscanAddr(addr) {
+      return 'https://sepolia.etherscan.io/address/' + addr;
+    }
+
+    function formatDeadline(timestamp) {
+      if (timestamp === 0) return 'None';
+      const now = Math.floor(Date.now() / 1000);
+      const diff = timestamp - now;
+
+      if (diff <= 0) return 'Expired';
+
+      if (diff < 60) return diff + 's left';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm left';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h left';
+      return Math.floor(diff / 86400) + 'd left';
+    }
+
+    function updateRefreshTime() {
+      const el = document.getElementById('refresh-info');
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      el.textContent = 'Updated ' + time;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-banner');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    function hideError() {
+      const el = document.getElementById('error-banner');
+      el.classList.remove('visible');
+    }
+
+    // ===== Event Listeners =====
+    document.getElementById('detail-close').addEventListener('click', () => {
+      selectedId = null;
+      document.getElementById('detail-panel').classList.remove('visible');
+      renderBoard();
     });
-  }
-  svg.innerHTML = html;
 
-  // Legend
-  const legend = document.getElementById('alloc-legend');
-  legend.innerHTML = segments.map(s => `
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${s.color}"></div>
-      <span class="legend-text">${s.label}</span>
-      <span class="legend-val">$${fmt(s.val)}</span>
-    </div>
-  `).join('') || '<div class="legend-text" style="color:var(--text-3)">No funds allocated</div>';
-
-  document.getElementById('donut-total').textContent = '$' + fmtK(total);
-}
-
-// ═══ Score gauge (SVG arc) ═══
-function drawGauge(score) {
-  const svg = document.getElementById('gauge-svg');
-  const cx = 100, cy = 110, r = 80;
-  const startAngle = Math.PI;     // 180 degrees (left)
-  const endAngle = 0;             // 0 degrees (right)
-  const range = startAngle - endAngle;
-  const pct = (score - 300) / 550;
-  const angle = startAngle - range * pct;
-
-  const arcEnd = (a) => ({ x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) });
-  const s = arcEnd(startAngle);
-  const e = arcEnd(endAngle);
-  const v = arcEnd(angle);
-
-  const color = score >= 750 ? '#00d4aa' : score >= 550 ? '#f0b429' : '#ff4466';
-
-  // Background arc
-  svg.innerHTML = `
-    <path d="M ${s.x} ${s.y} A ${r} ${r} 0 0 1 ${e.x} ${e.y}"
-      fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10" stroke-linecap="round"/>
-    <path d="M ${s.x} ${s.y} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${v.x} ${v.y}"
-      fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"
-      style="filter: drop-shadow(0 0 8px ${color}40)"/>
-    <text x="10" y="125" fill="rgba(255,255,255,0.2)" font-size="10" font-family="var(--mono)">300</text>
-    <text x="175" y="125" fill="rgba(255,255,255,0.2)" font-size="10" font-family="var(--mono)">850</text>
-  `;
-
-  const label = score >= 750 ? 'Excellent' : score >= 650 ? 'Good' : score >= 550 ? 'Fair' : score >= 450 ? 'Poor' : 'Very Poor';
-  document.getElementById('gauge-score').innerHTML = `<span style="color:${color}">${score}</span>`;
-  document.getElementById('gauge-label').textContent = label;
-}
-
-// ═══ Tab navigation ═══
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    const page = document.getElementById('page-' + tab.dataset.tab);
-    page.classList.add('active');
-    // Ambient color shift
-    document.body.dataset.ambient = tab.dataset.tab;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-});
-
-// ═══ Floating particles ═══
-(function initParticles() {
-  const container = document.getElementById('particles');
-  const count = 12;
-  for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + '%';
-    p.style.animationDuration = (8 + Math.random() * 12) + 's';
-    p.style.animationDelay = (Math.random() * 15) + 's';
-    p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
-    if (Math.random() > 0.6) p.style.background = 'var(--blue)';
-    container.appendChild(p);
-  }
-})();
-
-// ═══ Load pool data ═══
-async function loadPoolStats() {
-  try {
-    const [totalAssets, totalLoaned, aaveDeployed, idleBalance, totalShares, loanCount] = await pool.getPoolStats();
-
-    const total = toNum(totalAssets);
-    const idle = toNum(idleBalance);
-    const loaned = toNum(totalLoaned);
-    const aave = toNum(aaveDeployed);
-    const util = total > 0 ? (loaned / total * 100) : 0;
-    const count = Number(loanCount);
-
-    // Connection status
-    document.getElementById('connection-status').textContent = 'Sepolia';
-
-    // Pool health indicator
-    const healthEl = document.getElementById('pool-health');
-    if (util > 80) { healthEl.textContent = 'High Util'; healthEl.style.color = 'var(--red)'; healthEl.style.background = 'var(--red-dim)'; }
-    else if (util > 50) { healthEl.textContent = 'Moderate'; healthEl.style.color = 'var(--yellow)'; healthEl.style.background = 'var(--yellow-dim)'; }
-    else { healthEl.textContent = 'Healthy'; healthEl.style.color = 'var(--accent)'; healthEl.style.background = 'var(--accent-dim)'; }
-
-    // Stats bar (animated)
-    animateValue(document.getElementById('bar-total'), total, '$', '', 1000);
-    animateValue(document.getElementById('bar-util'), util, '', '%', 1000);
-    document.getElementById('bar-loans').textContent = count;
-    animateValue(document.getElementById('bar-aave'), aave, '$', '', 1000);
-
-    // Donut
-    drawDonut(idle, loaned, aave, total);
-
-    // Metric cards
-    document.getElementById('mc-idle').textContent = '$' + fmt(idle);
-    document.getElementById('mc-loaned').textContent = '$' + fmt(loaned);
-    document.getElementById('mc-aave').textContent = '$' + fmt(aave);
-    document.getElementById('mc-count').textContent = count;
-  } catch (e) {
-    console.error('Pool stats:', e);
-    document.getElementById('connection-status').textContent = 'Offline';
-    document.querySelector('.nav-dot').style.background = 'var(--red)';
-    document.getElementById('bar-total').innerHTML = '<span style="color:var(--text-3);font-size:0.75rem;cursor:pointer" onclick="refreshData()">Retry</span>';
-  }
-}
-
-// ═══ Load loans ═══
-async function loadLoans() {
-  try {
-    const nextId = await pool.nextLoanId();
-    const count = Number(nextId);
-    const tbody = document.getElementById('loans-body');
-    const badge = document.getElementById('loan-count-badge');
-
-    if (count === 0) {
-      badge.textContent = '0 loans';
-      tbody.innerHTML = '';
-      document.getElementById('loans-container').innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg></div>
-          <div class="empty-title">No loans issued yet</div>
-          <div class="empty-desc">Loans will appear here once borrowers apply via Telegram</div>
-        </div>`;
-      return;
-    }
-
-    badge.textContent = count + ' loan' + (count !== 1 ? 's' : '');
-    const start = Math.max(0, count - 10);
-    const loans = [];
-    const promises = [];
-    for (let i = count - 1; i >= start; i--) {
-      promises.push(pool.getLoan(i).then(loan => loans.push({
-        id: i, borrower: loan[0], principal: loan[1], rateAPR: loan[2],
-        startTime: loan[3], duration: loan[4], repaidTime: loan[5],
-        status: loan[6], creditScore: loan[7], confidence: loan[8], reasoning: loan[9]
-      })));
-    }
-    await Promise.all(promises);
-    loans.sort((a, b) => b.id - a.id);
-
-    tbody.innerHTML = loans.map(l => {
-      const dur = Number(l.duration) / 86400;
-      return `<tr>
-        <td class="mono">#${l.id}</td>
-        <td class="mono">${truncAddr(l.borrower)}</td>
-        <td class="mono">$${fmt(toNum(l.principal))}</td>
-        <td class="mono">${(Number(l.rateAPR) / 100).toFixed(1)}%</td>
-        <td class="mono">${l.creditScore}</td>
-        <td class="mono">${dur.toFixed(0)}d</td>
-        <td><span class="pill ${STATUS_PILL[l.status]}">${STATUS_TEXT[l.status]}</span></td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    console.error('Loans:', e);
-    document.getElementById('loans-body').innerHTML =
-      '<tr><td colspan="7" class="error-msg" style="text-align:center">Failed to load from Sepolia</td></tr>';
-  }
-}
-
-// ═══ Credit score lookup ═══
-async function lookupScore() {
-  const input = document.getElementById('score-input');
-  const errEl = document.getElementById('score-error');
-  const display = document.getElementById('score-display');
-  const addr = input.value.trim();
-  const btn = document.getElementById('score-btn');
-
-  errEl.textContent = '';
-  display.classList.remove('visible');
-
-  if (!ethers.isAddress(addr)) {
-    errEl.textContent = 'Enter a valid Ethereum address';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Checking...';
-
-  try {
-    const profile = await registry.getProfile(addr);
-    if (!profile.exists) {
-      errEl.textContent = 'No credit profile found for this address. Profiles are created when a borrower first interacts with Mellow.';
-      btn.disabled = false; btn.textContent = 'Check Score';
-      return;
-    }
-
-    const score = Number(profile.score);
-    drawGauge(score);
-
-    document.getElementById('score-meta').innerHTML = `
-      <div class="score-meta-item">
-        <div class="score-meta-val">${profile.totalLoans}</div>
-        <div class="score-meta-label">Total Loans</div>
-      </div>
-      <div class="score-meta-item">
-        <div class="score-meta-val" style="color:var(--accent)">${profile.repaidLoans}</div>
-        <div class="score-meta-label">Repaid</div>
-      </div>
-      <div class="score-meta-item">
-        <div class="score-meta-val" style="color:var(--red)">${profile.defaultedLoans}</div>
-        <div class="score-meta-label">Defaulted</div>
-      </div>
-      <div class="score-meta-item">
-        <div class="score-meta-val">${profile.lastUpdated > 0 ? new Date(Number(profile.lastUpdated) * 1000).toLocaleDateString() : '—'}</div>
-        <div class="score-meta-label">Last Updated</div>
-      </div>`;
-
-    display.classList.add('visible');
-  } catch (e) {
-    console.error('Score lookup:', e);
-    errEl.textContent = 'Error: ' + (e.reason || e.message);
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Check Score';
-}
-
-document.getElementById('score-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') lookupScore();
-});
-
-// ═══ Copy to clipboard ═══
-function copyAddr(addr, el) {
-  navigator.clipboard.writeText(addr).then(() => {
-    const tip = el.querySelector('.copy-tooltip');
-    tip.classList.add('show');
-    setTimeout(() => tip.classList.remove('show'), 1500);
-  });
-}
-
-// ═══ Scroll reveal (Intersection Observer) ═══
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-// Re-observe on tab switch (new page elements need observation)
-const originalTabHandler = () => {};
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    setTimeout(() => {
-      document.querySelectorAll('.reveal:not(.visible)').forEach(el => revealObserver.observe(el));
-    }, 50);
-  });
-});
-
-// ═══ Demo mode ═══
-let demoMode = false;
-
-const DEMO_LOANS = [
-  { id: 4, borrower: '0x7a23...f41c', amount: '$350.00', rate: '8.0%', score: 712, duration: '30d', status: 'Active', pill: 'pill-active' },
-  { id: 3, borrower: '0x1b9e...82a3', amount: '$150.00', rate: '12.0%', score: 583, duration: '14d', status: 'Repaid', pill: 'pill-repaid' },
-  { id: 2, borrower: '0xd4c8...19bf', amount: '$500.00', rate: '5.0%', score: 791, duration: '60d', status: 'Active', pill: 'pill-active' },
-  { id: 1, borrower: '0x3f12...a7d0', amount: '$200.00', rate: '15.0%', score: 468, duration: '7d', status: 'Repaid', pill: 'pill-repaid' },
-  { id: 0, borrower: '0x92ab...c5e1', amount: '$75.00', rate: '8.0%', score: 654, duration: '30d', status: 'Defaulted', pill: 'pill-defaulted' },
-];
-
-const DEMO_ACTIVITY = [
-  { color: 'var(--accent)', text: 'Loan <span class="hl">#4</span> approved for <span class="hl">0x7a23...f41c</span> - $350 at 8% APR', time: '2m ago' },
-  { color: 'var(--blue)', text: 'Credit score updated: <span class="hl">0x7a23...f41c</span> scored <span class="hl">712</span>/850', time: '2m ago' },
-  { color: 'var(--accent)', text: 'Loan <span class="hl">#3</span> fully repaid by <span class="hl">0x1b9e...82a3</span> (+$4.93 interest)', time: '1h ago' },
-  { color: 'var(--yellow)', text: '<span class="hl">$2,200</span> deployed to Aave V3 (idle optimization)', time: '3h ago' },
-  { color: 'var(--accent)', text: 'Loan <span class="hl">#2</span> approved for <span class="hl">0xd4c8...19bf</span> - $500 at 5% APR', time: '6h ago' },
-  { color: 'var(--red)', text: 'Loan <span class="hl">#0</span> marked defaulted - <span class="hl">0x92ab...c5e1</span> score -100', time: '2d ago' },
-];
-
-function toggleDemo() {
-  demoMode = !demoMode;
-  const toggle = document.getElementById('demo-toggle');
-  toggle.classList.toggle('active', demoMode);
-  toggle.setAttribute('aria-checked', demoMode);
-
-  if (demoMode) {
-    renderDemoData();
-  } else {
-    // Reload live data
-    loadPoolStats();
-    loadLoans();
-  }
-}
-
-// Keyboard support for toggle
-document.getElementById('demo-toggle').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDemo(); }
-});
-
-function renderDemoData() {
-  // Stats bar
-  animateValue(document.getElementById('bar-total'), 5425, '$', '', 800);
-  animateValue(document.getElementById('bar-util'), 15.7, '', '%', 800);
-  document.getElementById('bar-loans').textContent = '5';
-  animateValue(document.getElementById('bar-aave'), 2200, '$', '', 800);
-
-  // Donut - show all 3 segments
-  drawDonut(1875, 850, 2700, 5425);
-
-  // Metric cards
-  document.getElementById('mc-idle').textContent = '$1,875.00';
-  document.getElementById('mc-loaned').textContent = '$850.00';
-  document.getElementById('mc-aave').textContent = '$2,700.00';
-  document.getElementById('mc-count').textContent = '5';
-
-  // Loans table
-  const container = document.getElementById('loans-container');
-  const badge = document.getElementById('loan-count-badge');
-  badge.textContent = '5 loans';
-
-  container.innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID</th><th>Borrower</th><th>Amount</th><th>Rate</th><th>Score</th><th>Duration</th><th>Status</th></tr></thead>
-        <tbody>${DEMO_LOANS.map(l => `<tr>
-          <td class="mono">#${l.id}</td>
-          <td class="mono">${l.borrower}</td>
-          <td class="mono">${l.amount}</td>
-          <td class="mono">${l.rate}</td>
-          <td class="mono">${l.score}</td>
-          <td class="mono">${l.duration}</td>
-          <td><span class="pill ${l.pill}">${l.status}</span></td>
-        </tr>`).join('')}</tbody>
-      </table>
-    </div>
-    <div style="margin-top:var(--s-5)">
-      <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);font-weight:600;margin-bottom:var(--s-3)">Recent Activity</div>
-      <div class="activity-feed">${DEMO_ACTIVITY.map(a => `
-        <div class="activity-item">
-          <div class="activity-dot" style="background:${a.color}"></div>
-          <div class="activity-text">${a.text}</div>
-          <div class="activity-time">${a.time}</div>
-        </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-// ═══ Keyboard navigation for tabs ═══
-document.querySelector('.nav-tabs').addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-    const tabs = [...document.querySelectorAll('.nav-tab')];
-    const active = tabs.findIndex(t => t.classList.contains('active'));
-    const next = e.key === 'ArrowRight'
-      ? (active + 1) % tabs.length
-      : (active - 1 + tabs.length) % tabs.length;
-    tabs[next].click();
-    tabs[next].focus();
-    e.preventDefault();
-  }
-});
-
-// ═══ Auto-refresh (30s) ═══
-let lastUpdated = null;
-function updateTimestamp() {
-  lastUpdated = new Date();
-  const el = document.getElementById('last-updated');
-  if (el) el.textContent = 'Updated ' + lastUpdated.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-
-async function refreshData() {
-  if (demoMode) return;
-  await Promise.all([loadPoolStats(), loadLoans()]);
-  updateTimestamp();
-}
-
-// ═══ Init ═══
-refreshData();
-setInterval(refreshData, 30000);
-</script>
+    // ===== Boot =====
+    init();
+  </script>
 </body>
 </html>
