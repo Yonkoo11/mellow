@@ -3,8 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Escrow Protocol</title>
-  <meta name="description" content="Trustless settlement for autonomous AI agent commerce on Ethereum Sepolia.">
+  <title>Agent Escrow Protocol — AI agents that pay each other through smart contract escrow</title>
+  <meta name="description" content="Autonomous AI agents negotiate, escrow USDT, and settle payments on-chain. Built on Tether WDK. Live on Sepolia.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Agent Escrow Protocol">
+  <meta property="og:description" content="AI agents that pay each other through smart contract escrow. Built on Tether WDK.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yonkoo11.github.io/mellow/">
+  <meta property="og:image" content="https://yonkoo11.github.io/mellow/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Agent Escrow Protocol">
+  <meta name="twitter:description" content="AI agents that pay each other through smart contract escrow. Built on Tether WDK.">
+  <meta name="twitter:image" content="https://yonkoo11.github.io/mellow/og-image.png">
+
   <!--
     DESIGN PROPOSAL #3
     DNA: DNA-F-O-F-N-E
@@ -189,7 +203,39 @@
       height: 1px;
       background: var(--gold);
       border: none;
-      margin-bottom: var(--space-12);
+      margin-bottom: var(--space-6);
+    }
+    .hero-wdk {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: var(--space-8);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      animation: scrollHint 2s var(--ease) infinite;
+    }
+    .hero-scroll svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-dim);
+    }
+    @keyframes scrollHint {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 0.8; transform: translateX(-50%) translateY(6px); }
     }
     /* ===== Stats Bar ===== */
     .stats-bar {
@@ -305,6 +351,18 @@
       font-family: var(--mono);
       font-size: 12px;
       color: var(--text-muted);
+    }
+    .ledger .addr a {
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color var(--duration-fast) var(--ease),
+                  color var(--duration-fast) var(--ease);
+    }
+    .ledger .addr a:hover {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+      opacity: 1;
     }
     .ledger .amount {
       font-family: var(--mono);
@@ -482,18 +540,197 @@
     }
     .arch-connector {
       width: 60px;
-      height: 1px;
+      height: 2px;
       background: var(--gold);
       flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(196, 160, 82, 0.3);
     }
     @media (max-width: 700px) {
       .arch-connector {
-        width: 1px;
+        width: 2px;
         height: 40px;
       }
       .arch-diagram {
         flex-direction: column;
       }
+    }
+
+    /* ===== WDK Section ===== */
+    .wdk-section {
+      padding: var(--space-16) var(--space-6);
+      border-top: 1px solid var(--gold-rule);
+    }
+    .wdk-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 400;
+      margin-bottom: var(--space-3);
+      text-align: center;
+    }
+    .wdk-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: var(--space-12);
+    }
+    .wdk-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .wdk-card {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: var(--space-6);
+      background: var(--bg-alt);
+    }
+    .wdk-card-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: var(--space-3);
+    }
+    .wdk-card-value {
+      font-family: var(--serif);
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: var(--space-2);
+    }
+    .wdk-card-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+      .wdk-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ===== LLM Decision Section ===== */
+    .llm-section {
+      padding: var(--space-16) var(--space-6);
+      border-top: 1px solid var(--gold-rule);
+    }
+    .llm-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 400;
+      margin-bottom: var(--space-3);
+      text-align: center;
+    }
+    .llm-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: var(--space-12);
+    }
+    .llm-flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .llm-step {
+      padding: var(--space-6);
+      border-left: 2px solid var(--gold-rule);
+    }
+    .llm-step-num {
+      font-family: var(--serif);
+      font-size: 32px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: var(--space-3);
+    }
+    .llm-step-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: var(--space-2);
+    }
+    .llm-step-fn {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gold);
+      margin-bottom: var(--space-3);
+    }
+    .llm-step-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+      .llm-flow {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ===== Contract Stats ===== */
+    .contract-stats {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-10);
+      padding: var(--space-8) var(--space-6);
+      border-top: 1px solid var(--gold-rule);
+    }
+    .contract-stat {
+      text-align: center;
+    }
+    .contract-stat-value {
+      font-family: var(--serif);
+      font-size: 28px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .contract-stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: var(--space-1);
+    }
+    @media (max-width: 768px) {
+      .contract-stats {
+        flex-wrap: wrap;
+        gap: var(--space-6);
+      }
+    }
+
+    /* ===== Clickable rows ===== */
+    .ledger tbody tr[data-href] {
+      cursor: pointer;
+    }
+    .ledger tbody tr[data-href]:hover {
+      background: rgba(196, 160, 82, 0.06);
+    }
+    .ledger .ext-link {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-left: var(--space-1);
+      opacity: 0;
+      vertical-align: middle;
+      transition: opacity var(--duration-fast) var(--ease);
+    }
+    .ledger tbody tr:hover .ext-link {
+      opacity: 0.5;
+    }
+
+    /* ===== Testnet Badge ===== */
+    .stats-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-align: center;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--gold-rule);
     }
 
     /* ===== Footer ===== */
@@ -617,17 +854,24 @@
   <nav class="nav-overlay" id="navOverlay" aria-hidden="true" role="navigation">
     <a href="#escrow-board" data-nav>Escrow Board</a>
     <a href="#the-protocol" data-nav>The Protocol</a>
+    <a href="#wdk" data-nav>Tether WDK</a>
+    <a href="#llm" data-nav>LLM Decisions</a>
     <a href="#architecture" data-nav>Architecture</a>
   </nav>
 
   <!-- Hero -->
   <section class="hero" id="hero">
     <h1>Agent Escrow Protocol</h1>
-    <p class="hero-subtitle">Trustless settlement for autonomous commerce</p>
+    <p class="hero-subtitle">AI agents that negotiate, escrow USDT, and settle payments on-chain</p>
     <hr class="hero-rule">
+    <p class="hero-wdk">Built on Tether WDK &middot; Sepolia Testnet</p>
+    <div class="hero-scroll" aria-hidden="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
   </section>
 
   <!-- Stats Bar -->
+  <div class="stats-badge">Sepolia Testnet &middot; Demo Data</div>
   <section class="stats-bar" id="stats-bar" aria-label="Protocol statistics">
     <div class="stat-cell">
       <div class="stat-value" id="stat-escrows"><span class="skeleton skeleton-text"></span></div>
@@ -720,29 +964,98 @@
     </div>
   </section>
 
+  <!-- Tether WDK -->
+  <section class="wdk-section" id="wdk">
+    <h2 class="wdk-title">Tether WDK Integration</h2>
+    <p class="wdk-subtitle">Single seed phrase, two autonomous wallets, zero custody</p>
+    <div class="wdk-grid">
+      <div class="wdk-card">
+        <div class="wdk-card-label">Client Agent</div>
+        <div class="wdk-card-value">BIP-44 Index 0</div>
+        <div class="wdk-card-desc">Creates escrows, deposits USDT, evaluates submissions, releases payment. Fully autonomous.</div>
+      </div>
+      <div class="wdk-card">
+        <div class="wdk-card-label">Worker Agent</div>
+        <div class="wdk-card-value">BIP-44 Index 1</div>
+        <div class="wdk-card-desc">Accepts tasks, generates work product, submits results. Receives payment minus protocol fee.</div>
+      </div>
+      <div class="wdk-card">
+        <div class="wdk-card-label">Derivation</div>
+        <div class="wdk-card-value">Shared Seed</div>
+        <div class="wdk-card-desc">Both wallets derive from one mnemonic via BIP-44 paths. Non-custodial, programmatic, no key exchange needed.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LLM Decisions -->
+  <section class="llm-section" id="llm">
+    <h2 class="llm-title">How the LLM Decides</h2>
+    <p class="llm-subtitle">Claude Haiku runs 3 decision functions &times; 2 escrow flows per demo</p>
+    <div class="llm-flow">
+      <div class="llm-step">
+        <div class="llm-step-num">1</div>
+        <div class="llm-step-name">Evaluate Task</div>
+        <div class="llm-step-fn">evaluateTask()</div>
+        <div class="llm-step-desc">Worker agent reads the task description and decides whether to accept based on its capabilities and the offered payment.</div>
+      </div>
+      <div class="llm-step">
+        <div class="llm-step-num">2</div>
+        <div class="llm-step-name">Generate Work</div>
+        <div class="llm-step-fn">generateWork()</div>
+        <div class="llm-step-desc">Worker LLM produces the deliverable. The result is hashed and committed on-chain as proof of the work product.</div>
+      </div>
+      <div class="llm-step">
+        <div class="llm-step-num">3</div>
+        <div class="llm-step-name">Evaluate Submission</div>
+        <div class="llm-step-fn">evaluateSubmission()</div>
+        <div class="llm-step-desc">Client agent reviews the submission against original requirements and decides to release payment or dispute.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contract Stats -->
+  <div class="contract-stats">
+    <div class="contract-stat">
+      <div class="contract-stat-value">182</div>
+      <div class="contract-stat-label">Lines of Solidity</div>
+    </div>
+    <div class="contract-stat">
+      <div class="contract-stat-value">32/32</div>
+      <div class="contract-stat-label">Tests Passing</div>
+    </div>
+    <div class="contract-stat">
+      <div class="contract-stat-value">6</div>
+      <div class="contract-stat-label">State Transitions</div>
+    </div>
+    <div class="contract-stat">
+      <div class="contract-stat-value">1%</div>
+      <div class="contract-stat-label">Protocol Fee</div>
+    </div>
+  </div>
+
   <!-- Architecture -->
   <section class="architecture" id="architecture">
     <h2>Architecture</h2>
     <div class="arch-diagram">
       <div class="arch-node">
         <div class="arch-node-label">Client Agent</div>
-        <div class="arch-node-sub">WDK Wallet</div>
+        <div class="arch-node-sub">Claude Haiku + WDK #0</div>
       </div>
       <div class="arch-connector" role="presentation"></div>
       <div class="arch-node arch-node--primary">
         <div class="arch-node-label">AgentEscrow</div>
-        <div class="arch-node-sub">Smart Contract</div>
+        <div class="arch-node-sub">Solidity &middot; USDT &middot; 6 States</div>
       </div>
       <div class="arch-connector" role="presentation"></div>
       <div class="arch-node">
         <div class="arch-node-label">Worker Agent</div>
-        <div class="arch-node-sub">WDK Wallet</div>
+        <div class="arch-node-sub">Claude Haiku + WDK #1</div>
       </div>
     </div>
     <p class="arch-caption">
-      Both agents derive wallets from a single seed phrase via BIP-44 paths.
-      The smart contract mediates all value transfer. Neither agent ever holds
-      the other's keys.
+      Both agents are powered by Claude Haiku for task evaluation and work generation.
+      Wallets derive from a single seed phrase via Tether WDK (BIP-44).
+      The smart contract mediates all value transfer. Neither agent ever holds the other's keys.
     </p>
   </section>
 
@@ -873,10 +1186,15 @@
           var statusLabel = STATUS_LABELS[statusIdx] || 'UNKNOWN';
           var statusClass = STATUS_CLASSES[statusIdx] || '';
 
+          var clientLink = 'https://sepolia.etherscan.io/address/' + e.client;
+          var workerLink = e.worker === '0x0000000000000000000000000000000000000000'
+            ? null
+            : 'https://sepolia.etherscan.io/address/' + e.worker;
+
           html += '<tr>'
             + '<td class="id-col">' + k + '</td>'
-            + '<td class="addr" title="' + e.client + '">' + truncAddr(e.client) + '</td>'
-            + '<td class="addr" title="' + e.worker + '">' + truncAddr(e.worker) + '</td>'
+            + '<td class="addr" title="' + e.client + '"><a href="' + clientLink + '" target="_blank" rel="noopener">' + truncAddr(e.client) + '</a></td>'
+            + '<td class="addr" title="' + e.worker + '">' + (workerLink ? '<a href="' + workerLink + '" target="_blank" rel="noopener">' + truncAddr(e.worker) + '</a>' : truncAddr(e.worker)) + '</td>'
             + '<td class="amount">' + formatAmount(e.amount) + ' USDT</td>'
             + '<td class="amount">' + formatAmount(e.fee) + ' USDT</td>'
             + '<td class="status ' + statusClass + '">' + statusLabel + '</td>'

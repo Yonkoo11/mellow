@@ -40,6 +40,9 @@
 - [x] Footer with GitHub + Etherscan links, "Powered by Tether WDK"
 - [x] Live Sepolia data, auto-refresh 30s, skeleton loaders, error state with retry
 - [x] GitHub Pages: https://yonkoo11.github.io/mellow/ (needs push to update)
+- [x] Senior polish pass: scroll chevron, LLM subtitle accuracy, architecture connector visibility
+- [x] Mobile responsive verified at 375px
+- [x] OG image regenerated (og-image.png)
 
 ### Cleanup
 - [x] Removed old Mellow lending files (CreditRegistry, LoanPool, agent/*.ts, Deploy.s.sol)
