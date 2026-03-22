@@ -4,7 +4,7 @@ Trustless escrow for agent-to-agent commerce. Two AI agents negotiate, execute w
 
 **Built for:** Tether Hackathon Galactica: WDK Edition 1 (Agent Wallets track)
 
-**Live demo:** [Dashboard](https://yonkoo11.github.io/mellow/) | [Contract on Sepolia](https://sepolia.etherscan.io/address/0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6)
+**Live demo:** [Dashboard](https://yonkoo11.github.io/mellow/) | [Contract on Sepolia](https://sepolia.etherscan.io/address/0x68126baf9f282f91b9080c71aDa7e469d2e5E4D6) | [Demo Video](https://youtu.be/Nmnsz8uX3X0)
 
 ## What It Does
 
